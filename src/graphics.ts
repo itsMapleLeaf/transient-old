@@ -51,10 +51,27 @@ export function rectangle(c: CanvasRenderingContext2D, x: number, y: number, wid
   }
 }
 
+export function applyTranslation(c: CanvasRenderingContext2D, x: number, y: number, draw: (...args: any[]) => any) {
+  c.save()
+  c.translate(x, y)
+  draw()
+  c.restore()
+}
+
 export function applyCenteredRotation(angle: number, center: Point, c: CanvasRenderingContext2D, draw: (...args: any[]) => any) {
   c.save()
   c.translate(center.x, center.y)
   c.rotate(util.radians(angle))
+  draw()
+  c.restore()
+}
+
+export function applyShadow(c: CanvasRenderingContext2D, color: Color, blur: number, offsetX: number, offsetY: number, draw: (...args: any[]) => any) {
+  c.save()
+  c.shadowColor = color.toString()
+  c.shadowBlur = blur
+  c.shadowOffsetX = offsetX
+  c.shadowOffsetY = offsetY
   draw()
   c.restore()
 }

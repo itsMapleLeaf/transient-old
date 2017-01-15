@@ -10,6 +10,8 @@ export const viewHeight = 1280
 export const viewWidth = 720
 export const receptorPosition = viewHeight - 210
 
+enum NoteState { active, hit, missed, holding }
+
 interface Drawable {
   draw(c: CanvasRenderingContext2D): void
 }
@@ -19,8 +21,6 @@ interface Animation extends Drawable {
   update(dt: number): this
   isFinished(): boolean
 }
-
-enum NoteState { active, hit, missed, holding }
 
 class Note implements Drawable {
   state = NoteState.active
@@ -35,7 +35,6 @@ class Note implements Drawable {
 
   draw(c: CanvasRenderingContext2D) {
     const pos = this.getScreenPosition()
-
     graphics.applyCenteredRotation(45, pos, c, () => {
       graphics.rectangle(c, -25, -25, 50).fill(color.white)
       graphics.rectangle(c, -30, -30, 60).stroke(color.white.fade(0.7), 2)
@@ -65,17 +64,11 @@ class NoteHitAnimation implements Animation {
     const pos = this.pos.add(new Point(0, drift))
     const glowColor = color.white.fade(opacity)
 
-    c.save()
-
-    c.fillStyle = glowColor.toString()
-    c.shadowBlur = glowAmount
-    c.shadowColor = glowColor.toString()
-
-    graphics.applyCenteredRotation(45, pos, c, () => {
-      graphics.rectangle(c, -30, -30, 60).fill(glowColor)
+    graphics.applyShadow(c, glowColor, glowAmount, 0, 0, () => {
+      graphics.applyCenteredRotation(45, pos, c, () => {
+        graphics.rectangle(c, -30, -30, 60).fill(glowColor)
+      })
     })
-
-    c.restore()
   }
 }
 
@@ -123,11 +116,9 @@ export class Game {
 
   draw() {
     graphics.drawFrame(c => {
-      c.save()
-      c.translate(0, this.songTime * noteScale)
-      this.notes.forEach(n => n.draw(c))
-      c.restore()
-
+      graphics.applyTranslation(c, 0, this.songTime * noteScale, () => {
+        this.notes.forEach(n => n.draw(c))
+      })
       this.drawReceptor(c)
       this.animations.forEach(a => a.draw(c))
     })
