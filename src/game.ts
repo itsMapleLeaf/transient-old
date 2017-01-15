@@ -157,13 +157,7 @@ export class Game {
       const tapDistance = pos - px
 
       if (tapDistance < 100) {
-        const judgement =
-          timing <= 0.015 ? NoteJudgement.absolute :
-          timing <= 0.08 ? NoteJudgement.perfect :
-          timing <= 0.12 ? NoteJudgement.great :
-          timing <= 0.2 ? NoteJudgement.bad :
-          NoteJudgement.none
-
+        const judgement = this.getJudgement(timing)
         if (judgement < NoteJudgement.none) {
           this.notes.splice(i, 1)
           this.animations.push(new NoteHitAnimation(new Point(pos, receptorPosition)))
@@ -172,6 +166,16 @@ export class Game {
         break
       }
     }
+  }
+
+  getJudgement(timing: number) {
+    return (
+      timing <= 0.015 ? NoteJudgement.absolute :
+      timing <= 0.08 ? NoteJudgement.perfect :
+      timing <= 0.12 ? NoteJudgement.great :
+      timing <= 0.2 ? NoteJudgement.bad :
+      NoteJudgement.none
+    )
   }
 
   draw() {
