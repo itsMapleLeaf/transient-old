@@ -1,5 +1,7 @@
-import * as color from './color'
+import {Point} from './point'
 import {Rectangle} from './rect'
+import * as color from './color'
+import * as util from './util'
 
 export const canvas = document.querySelector('canvas') as HTMLCanvasElement
 
@@ -34,4 +36,12 @@ export function fillRect(c: CanvasRenderingContext2D, { pos, size }: Rectangle) 
 
 export function strokeRect(c: CanvasRenderingContext2D, { pos, size }: Rectangle) {
   c.strokeRect(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y))
+}
+
+export function applyCenteredRotation(angle: number, center: Point, c: CanvasRenderingContext2D, draw: (...args: any[]) => any) {
+  c.save()
+  c.translate(center.x, center.y)
+  c.rotate(util.radians(angle))
+  draw()
+  c.restore()
 }

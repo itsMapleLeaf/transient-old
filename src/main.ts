@@ -12,3 +12,5 @@ window.requestAnimationFrame(function frame(now) {
   game.update(elapsed)
   game.draw()
 })
+
+window.addEventListener('pointerdown', event => game.pointerdown(event as PointerEvent))

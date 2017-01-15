@@ -12,6 +12,7 @@ export class Game {
   static receptorPosition = Game.viewHeight - 210
 
   notes = [] as note.Note[]
+  noteExplosions = [] as note.ExplosionAnimation[]
   songTime = -3
 
   constructor() {
@@ -27,19 +28,32 @@ export class Game {
 
   update(dt: number) {
     this.songTime += dt
+    this.noteExplosions = this.noteExplosions.filter(a => a.time < 1)
+    this.noteExplosions.forEach(a => a.time += dt * 2)
   }
 
-  keydown(event: KeyboardEvent) {}
-
-  keyup(event: KeyboardEvent) {}
+  pointerdown(event: PointerEvent) {
+    for (let i = 0; i < Math.random() * 4; i++) {
+      this.noteExplosions.push({
+        time: 0,
+        origin: {
+          x: Math.random() * Game.viewWidth,
+          y: Game.receptorPosition,
+        }
+      })
+    }
+  }
 
   draw() {
     graphics.drawFrame(c => {
-      for (const n of this.notes) {
-        note.draw(c, n, this.songTime)
-      }
-      c.fillStyle = color.toRGBAString(color.fade(color.white, 0.5))
-      c.fillRect(0, Game.receptorPosition, Game.viewWidth, 10)
+      this.notes.forEach(n => note.draw(c, n, this.songTime))
+      this.drawReceptor(c)
+      this.noteExplosions.forEach(a => note.drawExplosion(a, c))
     })
+  }
+
+  drawReceptor(c: CanvasRenderingContext2D) {
+    c.fillStyle = color.toRGBAString(color.fade(color.white, 0.5))
+    c.fillRect(0, Game.receptorPosition - 5, Game.viewWidth, 10)
   }
 }

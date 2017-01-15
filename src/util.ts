@@ -7,6 +7,14 @@ export function delta(num: number, a: number, b: number) {
   return (num - a) / (b - a)
 }
 
+export function clamp(num: number, min: number, max: number) {
+  return (
+    num > max ? max :
+    num < min ? min :
+    num
+  )
+}
+
 export function radians(degrees: number) {
   return degrees / 180 * Math.PI
 }
