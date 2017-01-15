@@ -4,12 +4,7 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "isolatedModules": false,
-    "jsx": "react",
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "declaration": false,
-    "noImplicitAny": false,
-    "noImplicitUseStrict": false,
+    "noImplicitAny": true,
     "removeComments": true,
     "noLib": false,
     "preserveConstEnums": true,
@@ -17,13 +12,8 @@
     "strictNullChecks": true
   },
   "exclude": [
-    "node_modules",
-    "typings/browser",
-    "typings/browser.d.ts"
+    "node_modules"
   ],
   "compileOnSave": false,
-  "buildOnSave": false,
-  "atom": {
-    "rewriteTsconfig": false
-  }
+  "buildOnSave": false
 }

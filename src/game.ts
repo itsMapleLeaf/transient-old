@@ -4,6 +4,9 @@ import {Note, NoteHitAnimation} from './note'
 import {Judgement, JudgementAnimation} from './judgement'
 import * as graphics from './graphics'
 import * as util from './util'
+import {Howl} from 'howler'
+
+declare var require: Function
 
 export const noteSpacing = 300 // pixels per second
 export const trackLeft = 100
@@ -27,6 +30,14 @@ export class Game {
   animations = [] as Animation[]
   judgement = new JudgementAnimation(Judgement.none)
   songTime = -2
+  playing = false
+
+  music = new Howl({
+    src: [
+      require('../songs/frigid/just nobody - Frigid.ogg'),
+      require('../songs/frigid/just nobody - Frigid.mp3'),
+    ]
+  })
 
   constructor() {
     graphics.setDimensions(viewWidth, viewHeight)
@@ -37,9 +48,16 @@ export class Game {
     this.notes.push(new Note(2 / 2, 2 / 4))
     this.notes.push(new Note(3 / 2, 3 / 4))
     this.notes.push(new Note(4 / 2, 4 / 4))
+
+    this.music.once('load', () => {
+      this.music.play()
+      this.playing = true
+    })
   }
 
   update(dt: number) {
+    if (!this.playing) return
+
     this.songTime += dt
     this.judgement.update(dt)
     this.animations = this.animations
