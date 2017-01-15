@@ -1,7 +1,80 @@
 import * as graphics from './graphics'
 import * as color from './color'
 import * as util from './util'
-import * as note from './note'
+import {Point} from './point'
+
+enum NoteState { active, hit, missed, holding }
+
+class Note {
+  state = NoteState.active
+
+  constructor(public time: number, public position: number) {}
+
+  getScreenPosition(songTime: number): Point {
+    const x = util.lerp(Game.trackLeft, Game.viewWidth - Game.trackRight, this.position)
+    const y = util.lerp(Game.receptorPosition, Game.receptorPosition - Game.noteScale, this.time - songTime)
+    return new Point(x, y)
+  }
+
+  draw(c: CanvasRenderingContext2D, songTime: number) {
+    const pos = this.getScreenPosition(songTime)
+
+    graphics.rectangle(c, pos.x, pos.y, 50)
+      .rotate(45)
+      .fill(color.white)
+
+    graphics.rectangle(c, pos.x, pos.y, 60)
+      .rotate(45)
+      .stroke(color.white.fade(0.7), 2)
+  }
+}
+
+abstract class Animation {
+  time = 0
+
+  update(dt: number): this {
+    this.time += dt
+    return this
+  }
+
+  isFinished(): boolean {
+    return this.time >= 1
+  }
+
+  abstract draw(c: CanvasRenderingContext2D): void
+}
+
+class NoteHitAnimation extends Animation {
+  constructor(public pos: Point) {
+    super()
+  }
+
+  update(dt: number): this {
+    super.update(dt * 2)
+    return this
+  }
+
+  draw(c: CanvasRenderingContext2D) {
+    const drift = this.time ** 2 * 200
+    const opacity = 1 - util.clamp(this.time, 0, 1) ** 1.7
+    const glowAmount = (1 - this.time ** 2) * 75
+
+    const pos = this.pos.add(new Point(0, drift))
+    const glowColor = color.white.fade(opacity)
+
+    c.save()
+
+    c.fillStyle = glowColor.toString()
+    c.shadowBlur = glowAmount
+    c.shadowColor = glowColor.toString()
+
+    graphics.rectangle(c, pos.x, pos.y, 60)
+      .rotate(45)
+      .fill(glowColor)
+
+    c.restore()
+  }
+}
 
 export class Game {
   static viewWidth = 720
@@ -11,25 +84,26 @@ export class Game {
   static trackRight = 100
   static receptorPosition = Game.viewHeight - 210
 
-  notes = [] as note.NoteData[]
-  noteExplosions = [] as note.ExplosionAnimation[]
-  songTime = -3
+  notes = [] as Note[]
+  animations = [] as Animation[]
+  songTime = -2
 
   constructor() {
     graphics.setDimensions(Game.viewWidth, Game.viewHeight)
     graphics.setBackgroundColor(color.black)
 
-    this.notes.push({ time: 0 / 2, position: 0 / 4 })
-    this.notes.push({ time: 1 / 2, position: 1 / 4 })
-    this.notes.push({ time: 2 / 2, position: 2 / 4 })
-    this.notes.push({ time: 3 / 2, position: 3 / 4 })
-    this.notes.push({ time: 4 / 2, position: 4 / 4 })
+    this.notes.push(new Note(0 / 2, 0 / 4))
+    this.notes.push(new Note(1 / 2, 1 / 4))
+    this.notes.push(new Note(2 / 2, 2 / 4))
+    this.notes.push(new Note(3 / 2, 3 / 4))
+    this.notes.push(new Note(4 / 2, 4 / 4))
   }
 
   update(dt: number) {
     this.songTime += dt
-    this.noteExplosions = this.noteExplosions.filter(a => a.time < 1)
-    this.noteExplosions.forEach(a => a.time += dt * 2)
+    this.animations = this.animations
+      .map(anim => anim.update(dt))
+      .filter(anim => !anim.isFinished())
   }
 
   pointerdown(event: PointerEvent) {
@@ -38,16 +112,14 @@ export class Game {
     const py = event.offsetY / height * Game.viewHeight
 
     for (let i = 0; i < this.notes.length; i++) {
-      const n = this.notes[i]
-      const pos = note.getScreenPosition(n, this.songTime)
-      const goodTiming = Math.abs(n.time - this.songTime) < 0.1
+      const note = this.notes[i]
+      const pos = note.getScreenPosition(this.songTime)
+      const goodTiming = Math.abs(note.time - this.songTime) < 0.1
       const goodPosition = pos.x - px < 100
+
       if (goodTiming && goodPosition) {
         this.notes.splice(i, 1)
-        this.noteExplosions.push({
-          origin: { x: pos.x, y: Game.receptorPosition },
-          time: 0,
-        })
+        this.animations.push(new NoteHitAnimation(new Point(pos.x, Game.receptorPosition)))
         break
       }
     }
@@ -55,14 +127,14 @@ export class Game {
 
   draw() {
     graphics.drawFrame(c => {
-      this.notes.forEach(n => note.draw(c, n, this.songTime))
+      this.notes.forEach(n => n.draw(c, this.songTime))
       this.drawReceptor(c)
-      this.noteExplosions.forEach(a => note.drawExplosion(a, c))
+      this.animations.forEach(a => a.draw(c))
     })
   }
 
   drawReceptor(c: CanvasRenderingContext2D) {
-    c.fillStyle = color.toRGBAString(color.fade(color.white, 0.5))
+    c.fillStyle = color.white.fade(0.5).toString()
     c.fillRect(0, Game.receptorPosition - 5, Game.viewWidth, 10)
   }
 }

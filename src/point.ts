@@ -1,5 +1,7 @@
-export type Point = { x: number, y: number }
+export class Point {
+  constructor(public x: number, public y: number) {}
 
-export function add({ x, y }: Point, dx: number, dy: number): Point {
-  return { x: x + dx, y: y + dy }
+  add(other: Point) {
+    return new Point(this.x + other.x, this.y + other.y)
+  }
 }
