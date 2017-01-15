@@ -3,6 +3,13 @@ import * as color from './color'
 import * as util from './util'
 import {Point} from './point'
 
+export const viewWidth = 720
+export const viewHeight = 1280
+export const noteScale = 300
+export const trackLeft = 100
+export const trackRight = 100
+export const receptorPosition = viewHeight - 210
+
 enum NoteState { active, hit, missed, holding }
 
 class Note {
@@ -11,8 +18,8 @@ class Note {
   constructor(public time: number, public position: number) {}
 
   getScreenPosition(songTime: number): Point {
-    const x = util.lerp(Game.trackLeft, Game.viewWidth - Game.trackRight, this.position)
-    const y = util.lerp(Game.receptorPosition, Game.receptorPosition - Game.noteScale, this.time - songTime)
+    const x = util.lerp(trackLeft, viewWidth - trackRight, this.position)
+    const y = util.lerp(receptorPosition, receptorPosition - noteScale, this.time - songTime)
     return new Point(x, y)
   }
 
@@ -74,19 +81,12 @@ class NoteHitAnimation extends Animation {
 }
 
 export class Game {
-  static viewWidth = 720
-  static viewHeight = 1280
-  static noteScale = 300
-  static trackLeft = 100
-  static trackRight = 100
-  static receptorPosition = Game.viewHeight - 210
-
   notes = [] as Note[]
   animations = [] as Animation[]
   songTime = -2
 
   constructor() {
-    graphics.setDimensions(Game.viewWidth, Game.viewHeight)
+    graphics.setDimensions(viewWidth, viewHeight)
     graphics.setBackgroundColor(color.black)
 
     this.notes.push(new Note(0 / 2, 0 / 4))
@@ -105,8 +105,8 @@ export class Game {
 
   pointerdown(event: PointerEvent) {
     const {width, height} = graphics.canvas.getBoundingClientRect()
-    const px = event.offsetX / width * Game.viewWidth
-    const py = event.offsetY / height * Game.viewHeight
+    const px = event.offsetX / width * viewWidth
+    const py = event.offsetY / height * viewHeight
 
     for (let i = 0; i < this.notes.length; i++) {
       const note = this.notes[i]
@@ -116,7 +116,7 @@ export class Game {
 
       if (goodTiming && goodPosition) {
         this.notes.splice(i, 1)
-        this.animations.push(new NoteHitAnimation(new Point(pos.x, Game.receptorPosition)))
+        this.animations.push(new NoteHitAnimation(new Point(pos.x, receptorPosition)))
         break
       }
     }
@@ -132,6 +132,6 @@ export class Game {
 
   drawReceptor(c: CanvasRenderingContext2D) {
     c.fillStyle = color.white.fade(0.5).toString()
-    c.fillRect(0, Game.receptorPosition - 5, Game.viewWidth, 10)
+    c.fillRect(0, receptorPosition - 5, viewWidth, 10)
   }
 }
