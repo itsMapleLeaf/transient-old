@@ -96,7 +96,7 @@ class JudgementAnimation implements Animation {
   }
 
   isFinished() {
-    return this.time >= 1
+    return this.time >= 1.3
   }
 
   draw(c: CanvasRenderingContext2D) {
