@@ -1,110 +1,25 @@
+type Color = [number, number, number, number]
+
 export const canvas = document.querySelector('canvas') as HTMLCanvasElement
-export const context2d = canvas.getContext('2d')
 
-interface Color {
-  toString(): string
+export function rgb(r: number, g: number, b: number, a = 1): Color {
+  return [r, g, b, a]
 }
 
-export class ColorHSL implements Color {
-  constructor(
-    public h: number,
-    public s: number,
-    public l: number,
-    public a = 1,
-  ) {}
-
-  toString() {
-    const h = Math.round(this.h * 255)
-    const s = Math.round(this.s * 100)
-    const l = Math.round(this.l * 100)
-    return `hsla(${h}, ${s}%, ${l}%, ${this.a})`
-  }
+export function fade([r, g, b]: Color, alpha: number): Color {
+  return [r, g, b, alpha]
 }
 
-abstract class Drawable {
-  protected color: Color = new ColorHSL(1, 1, 1)
-
-  constructor(protected x: number, protected y: number) {}
-
-  setPosition(x: number, y: number) {
-    this.x = x
-    this.y = y
-    return this
-  }
-
-  setColor(color: Color) {
-    this.color = color
-    return this
-  }
+export const colors = {
+  black: rgb(0, 0, 0),
+  white: rgb(1, 1, 1),
 }
 
-export class Rectangle extends Drawable {
-  private halign = 0.5
-  private valign = 0.5
-  private angle = 0
-
-  constructor(x: number, y: number, private width: number, private height = width) {
-    super(x, y)
-  }
-
-  setSize(w: number, h = w) {
-    this.width = w
-    this.height = h
-    return this
-  }
-
-  setAlign(halign: number, valign: number) {
-    this.halign = halign
-    this.valign = valign
-    return this
-  }
-
-  setAngle(angle: number) {
-    this.angle = angle
-    return this
-  }
-
-  fill() {
-    if (!context2d) throw "Could not get canvas context"
-
-    this.applyTransform(() => {
-      context2d.fillStyle = this.color.toString()
-      context2d.fillRect(0, 0, this.width, this.height)
-    })
-
-    return this
-  }
-
-  stroke(lineWidth: number) {
-    if (!context2d) throw "Could not get canvas context"
-
-    this.applyTransform(() => {
-      context2d.strokeStyle = this.color.toString()
-      context2d.lineWidth = lineWidth
-      context2d.strokeRect(0, 0, this.width, this.height)
-    })
-
-    return this
-  }
-
-  private getAlignedPosition(): [number, number] {
-    const x = this.x - this.width * this.halign
-    const y = this.y - this.height * this.valign
-    return [x, y]
-  }
-
-  private applyTransform(drawOperation: (...args: any[]) => any) {
-    if (context2d) {
-      const [x, y] = this.getAlignedPosition()
-      context2d.save()
-      context2d.translate(x, y)
-      context2d.translate(this.width * this.halign, this.height * this.valign)
-      context2d.rotate(this.angle / 180 * Math.PI)
-      context2d.translate(-this.width * this.halign, -this.height * this.valign)
-      drawOperation()
-      context2d.restore()
-    }
-  }
+export function toRGBAString([r, g, b, a = 1]: Color): string {
+  r = Math.round(r * 255)
+  g = Math.round(g * 255)
+  b = Math.round(b * 255)
+  return `rgba(${r}, ${g}, ${b}, ${a})`
 }
 
 export function getWidth(): number {
@@ -116,7 +31,7 @@ export function getHeight(): number {
 }
 
 export function setBackgroundColor(color: Color) {
-  canvas.style.backgroundColor = color.toString()
+  canvas.style.backgroundColor = toRGBAString(color)
 }
 
 export function setDimensions(width: number, height: number) {
@@ -124,8 +39,10 @@ export function setDimensions(width: number, height: number) {
   canvas.height = height
 }
 
-export function clear() {
-  if (context2d) {
-    context2d.clearRect(0, 0, canvas.width, canvas.height)
+export function drawFrame(draw: (c: CanvasRenderingContext2D) => any) {
+  const context = canvas.getContext('2d')
+  if (context) {
+    context.clearRect(0, 0, canvas.width, canvas.height)
+    draw(context)
   }
 }
