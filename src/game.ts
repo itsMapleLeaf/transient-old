@@ -19,13 +19,10 @@ class Note {
   draw(c: CanvasRenderingContext2D, songTime: number) {
     const pos = this.getScreenPosition(songTime)
 
-    graphics.rectangle(c, pos.x, pos.y, 50)
-      .rotate(45)
-      .fill(color.white)
-
-    graphics.rectangle(c, pos.x, pos.y, 60)
-      .rotate(45)
-      .stroke(color.white.fade(0.7), 2)
+    graphics.applyCenteredRotation(45, pos, c, () => {
+      graphics.rectangle(c, -25, -25, 50) .fill(color.white)
+      graphics.rectangle(c, -30, -30, 60).stroke(color.white.fade(0.7), 2)
+    })
   }
 }
 
@@ -68,9 +65,9 @@ class NoteHitAnimation extends Animation {
     c.shadowBlur = glowAmount
     c.shadowColor = glowColor.toString()
 
-    graphics.rectangle(c, pos.x, pos.y, 60)
-      .rotate(45)
-      .fill(glowColor)
+    graphics.applyCenteredRotation(45, pos, c, () => {
+      graphics.rectangle(c, -30, -30, 60).fill(glowColor)
+    })
 
     c.restore()
   }
