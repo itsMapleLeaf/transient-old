@@ -6,16 +6,19 @@ class Note {
 
   getScreenPosition() {
     const x = util.lerp(Game.trackLeft, Game.viewWidth - Game.trackRight, this.position)
-    const y = util.lerp(0, Game.noteScale, this.time)
+    const y = util.lerp(Game.receptorPosition, Game.receptorPosition - Game.noteScale, this.time)
     return [x, y]
   }
 
   draw() {
     const [x, y] = this.getScreenPosition()
-    new graphics.Rectangle(x, y, 40)
+    new graphics.Rectangle(x, y, 50)
+      .setColor(new graphics.ColorHSL(1, 1, 1, 1))
       .setAngle(Math.PI * 0.25)
       .fill()
-      .setSize(50)
+
+      .setColor(new graphics.ColorHSL(1, 1, 1, 0.7))
+      .setSize(60)
       .stroke(2)
   }
 }
@@ -26,9 +29,10 @@ export class Game {
   static noteScale = 300
   static trackLeft = 100
   static trackRight = 100
+  static receptorPosition = Game.viewHeight - 210
 
   notes = [] as Note[]
-  songTime = 0
+  songTime = -3
 
   constructor() {
     graphics.setDimensions(Game.viewWidth, Game.viewHeight)
@@ -48,6 +52,13 @@ export class Game {
   keyup(event: KeyboardEvent) {}
 
   draw() {
+    graphics.clear()
+
+    new graphics.Rectangle(0, Game.receptorPosition, Game.viewWidth, 10)
+      .setColor(new graphics.ColorHSL(1, 1, 1, 0.5))
+      .setAlign(0, 0.5)
+      .fill()
+
     for (const note of this.notes) {
       note.draw()
     }

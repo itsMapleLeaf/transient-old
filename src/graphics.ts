@@ -17,7 +17,7 @@ export class ColorHSL implements Color {
     const h = Math.round(this.h * 255)
     const s = Math.round(this.s * 100)
     const l = Math.round(this.l * 100)
-    return `hsl(${h}, ${s}%, ${l}%)`
+    return `hsla(${h}, ${s}%, ${l}%, ${this.a})`
   }
 }
 
@@ -122,4 +122,10 @@ export function setBackgroundColor(color: Color) {
 export function setDimensions(width: number, height: number) {
   canvas.width = width
   canvas.height = height
+}
+
+export function clear() {
+  if (context2d) {
+    context2d.clearRect(0, 0, canvas.width, canvas.height)
+  }
 }
