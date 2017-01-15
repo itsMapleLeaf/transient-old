@@ -1,9 +1,4 @@
-export interface Color {
-  toString(): string
-  fade(opacity: number): Color
-}
-
-export class ColorRGB implements Color {
+export class Color {
   constructor(public r: number, public g: number, public b: number, public a = 1) {}
 
   toString(): string {
@@ -14,9 +9,9 @@ export class ColorRGB implements Color {
   }
 
   fade(opacity: number) {
-    return new ColorRGB(this.r, this.g, this.b, this.a * opacity)
+    return new Color(this.r, this.g, this.b, this.a * opacity)
   }
-}
 
-export const white = new ColorRGB(1, 1, 1)
-export const black = new ColorRGB(0, 0, 0)
+  static white = new Color(1, 1, 1)
+  static black = new Color(0, 0, 0)
+}

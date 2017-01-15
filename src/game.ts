@@ -1,7 +1,7 @@
-import * as graphics from './graphics'
-import * as color from './color'
-import * as util from './util'
+import {Color} from './color'
 import {Point} from './point'
+import * as graphics from './graphics'
+import * as util from './util'
 
 export const noteScale = 300
 export const trackLeft = 100
@@ -49,8 +49,8 @@ class Note implements Drawable {
   draw(c: CanvasRenderingContext2D) {
     const pos = this.getScreenPosition()
     graphics.applyCenteredRotation(45, pos, c, () => {
-      graphics.rectangle(c, -25, -25, 50).fill(color.white)
-      graphics.rectangle(c, -30, -30, 60).stroke(color.white.fade(0.7), 2)
+      graphics.rectangle(c, -25, -25, 50).fill(Color.white)
+      graphics.rectangle(c, -30, -30, 60).stroke(Color.white.fade(0.7), 2)
     })
   }
 }
@@ -75,7 +75,7 @@ class NoteHitAnimation implements Animation {
     const glowAmount = (1 - this.time ** 2) * 75
 
     const pos = this.pos.add(new Point(0, drift))
-    const glowColor = color.white.fade(opacity)
+    const glowColor = Color.white.fade(opacity)
 
     graphics.applyShadow(c, glowColor, glowAmount, 0, 0, () => {
       graphics.applyCenteredRotation(45, pos, c, () => {
@@ -109,7 +109,7 @@ class JudgementAnimation implements Animation {
 
     const offset = (1 - util.clamp(this.time * 4, 0, 1) ** 0.5) * 32
     const opacity = 1 - util.delta(this.time, 1, 1.3)
-    const judgeColor = color.white.fade(util.clamp(opacity, 0, 1))
+    const judgeColor = Color.white.fade(util.clamp(opacity, 0, 1))
 
     graphics.applyShadow(c, judgeColor.fade(0.3), 20, 0, 0, () => {
       c.font = '80px Roboto Condensed'
@@ -128,7 +128,7 @@ export class Game {
 
   constructor() {
     graphics.setDimensions(viewWidth, viewHeight)
-    graphics.setBackgroundColor(color.black)
+    graphics.setBackgroundColor(Color.black)
 
     this.notes.push(new Note(0 / 2, 0 / 4))
     this.notes.push(new Note(1 / 2, 1 / 4))
@@ -190,7 +190,7 @@ export class Game {
   }
 
   drawReceptor(c: CanvasRenderingContext2D) {
-    c.fillStyle = color.white.fade(0.5).toString()
+    c.fillStyle = Color.white.fade(0.5).toString()
     c.fillRect(0, receptorPosition - 5, viewWidth, 10)
   }
 }
