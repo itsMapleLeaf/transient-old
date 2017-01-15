@@ -37,10 +37,10 @@ export function draw(c: CanvasRenderingContext2D, note: Note, songTime: number) 
 export function drawExplosion(anim: ExplosionAnimation, c: CanvasRenderingContext2D) {
   const drift = anim.time ** 2 * 200
   const opacity = 1 - util.clamp(anim.time, 0, 1) ** 1.7
-  const glowAmount = (1 - anim.time ** 2) * 20
+  const glowAmount = (1 - anim.time ** 2) * 50
 
   const pos = point.add(anim.origin, 0, drift)
-  const explosionColor = color.fade(color.white, opacity)
+  const explosionColor = color.fade(color.rgb(0.3, 0.5, 1), opacity)
   const glowColor = color.fade(explosionColor, 0.5)
 
   c.save()

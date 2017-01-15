@@ -33,14 +33,23 @@ export class Game {
   }
 
   pointerdown(event: PointerEvent) {
-    for (let i = 0; i < Math.random() * 4; i++) {
-      this.noteExplosions.push({
-        time: 0,
-        origin: {
-          x: Math.random() * Game.viewWidth,
-          y: Game.receptorPosition,
-        }
-      })
+    const {width, height} = graphics.canvas.getBoundingClientRect()
+    const px = event.offsetX / width * Game.viewWidth
+    const py = event.offsetY / height * Game.viewHeight
+
+    for (let i = 0; i < this.notes.length; i++) {
+      const n = this.notes[i]
+      const pos = note.getScreenPosition(n, this.songTime)
+      const goodTiming = Math.abs(n.time - this.songTime) < 0.1
+      const goodPosition = pos.x - px < 100
+      if (goodTiming && goodPosition) {
+        this.notes.splice(i, 1)
+        this.noteExplosions.push({
+          origin: { x: pos.x, y: Game.receptorPosition },
+          time: 0,
+        })
+        return
+      }
     }
   }
 
