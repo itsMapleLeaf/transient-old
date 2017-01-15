@@ -3,7 +3,7 @@ import {Point} from './point'
 import * as graphics from './graphics'
 import * as util from './util'
 
-export const noteScale = 300
+export const noteSpacing = 300 // pixels per second
 export const trackLeft = 100
 export const trackRight = 100
 export const viewHeight = 1280
@@ -42,7 +42,7 @@ class Note implements Drawable {
 
   getScreenPosition(): Point {
     const x = util.lerp(trackLeft, viewWidth - trackRight, this.position)
-    const y = util.lerp(receptorPosition, receptorPosition - noteScale, this.time)
+    const y = util.lerp(receptorPosition, receptorPosition - noteSpacing, this.time)
     return new Point(x, y)
   }
 
@@ -180,7 +180,7 @@ export class Game {
 
   draw() {
     graphics.drawFrame(c => {
-      graphics.applyTranslation(c, 0, this.songTime * noteScale, () => {
+      graphics.applyTranslation(c, 0, this.songTime * noteSpacing, () => {
         this.notes.forEach(n => n.draw(c))
       })
       this.drawReceptor(c)
