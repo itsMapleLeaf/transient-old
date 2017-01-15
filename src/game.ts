@@ -20,7 +20,7 @@ class Note {
     const pos = this.getScreenPosition(songTime)
 
     graphics.applyCenteredRotation(45, pos, c, () => {
-      graphics.rectangle(c, -25, -25, 50) .fill(color.white)
+      graphics.rectangle(c, -25, -25, 50).fill(color.white)
       graphics.rectangle(c, -30, -30, 60).stroke(color.white.fade(0.7), 2)
     })
   }
