@@ -1,4 +1,5 @@
 import * as color from './color'
+import {Rectangle} from './rect'
 
 export const canvas = document.querySelector('canvas') as HTMLCanvasElement
 
@@ -25,4 +26,12 @@ export function drawFrame(draw: (c: CanvasRenderingContext2D) => any) {
     context.clearRect(0, 0, canvas.width, canvas.height)
     draw(context)
   }
+}
+
+export function fillRect(c: CanvasRenderingContext2D, { pos, size }: Rectangle) {
+  c.fillRect(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y))
+}
+
+export function strokeRect(c: CanvasRenderingContext2D, { pos, size }: Rectangle) {
+  c.strokeRect(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y))
 }
