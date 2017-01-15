@@ -18,20 +18,33 @@ export class ColorHSL implements Color {
   }
 }
 
-export class Rectangle {
-  private color: Color = new ColorHSL(1, 1, 1)
+abstract class DrawableContext {
+  protected x = 0
+  protected y = 0
+  protected color_: Color = new ColorHSL(1, 1, 1)
+
+  position(x: number, y: number) {
+    this.x = x
+    this.y = y
+    return this
+  }
+
+  color(color: Color) {
+    this.color_ = color
+    return this
+  }
+}
+
+export class RectangleContext extends DrawableContext {
+  private width = 0
+  private height = 0
   private halign = 0.5
   private valign = 0.5
+  private angle = 0
 
-  constructor(
-    private x: number,
-    private y: number,
-    private width: number,
-    private height: number,
-  ) {}
-
-  colorize(color: Color) {
-    this.color = color
+  size(w: number, h = w) {
+    this.width = w
+    this.height = h
     return this
   }
 
@@ -43,7 +56,7 @@ export class Rectangle {
 
   fill() {
     if (context2d) {
-      context2d.fillStyle = this.color.toString()
+      context2d.fillStyle = this.color_.toString()
       context2d.fillRect(this.x - this.width * this.halign, this.y - this.height * this.valign, this.width, this.height)
     }
     return this
@@ -51,7 +64,7 @@ export class Rectangle {
 
   stroke(lineWidth: number) {
     if (context2d) {
-      context2d.strokeStyle = this.color.toString()
+      context2d.strokeStyle = this.color_.toString()
       context2d.lineWidth = lineWidth
       context2d.strokeRect(this.x - this.width * this.halign, this.y - this.height * this.valign, this.width, this.height)
     }
@@ -79,6 +92,6 @@ export function setDimensions(width: number, height: number) {
   canvas.height = height
 }
 
-export function rectangle(x: number, y: number, w: number, h: number) {
-  return new Rectangle(x, y, w, h)
+export function rectangle() {
+  return new RectangleContext()
 }
