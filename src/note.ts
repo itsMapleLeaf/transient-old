@@ -5,7 +5,7 @@ import * as point from './point'
 import * as rect from './rect'
 import * as util from './util'
 
-export type Note = {
+export type NoteData = {
   time: number
   position: number
 }
@@ -15,13 +15,13 @@ export type ExplosionAnimation = {
   origin: point.Point
 }
 
-export function getScreenPosition(note: Note, songTime: number): point.Point {
+export function getScreenPosition(note: NoteData, songTime: number): point.Point {
   const x = util.lerp(Game.trackLeft, Game.viewWidth - Game.trackRight, note.position)
   const y = util.lerp(Game.receptorPosition, Game.receptorPosition - Game.noteScale, note.time - songTime)
   return {x, y}
 }
 
-export function draw(c: CanvasRenderingContext2D, note: Note, songTime: number) {
+export function draw(c: CanvasRenderingContext2D, note: NoteData, songTime: number) {
   const pos = getScreenPosition(note, songTime)
 
   c.fillStyle = color.toRGBAString(color.white)

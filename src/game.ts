@@ -11,7 +11,7 @@ export class Game {
   static trackRight = 100
   static receptorPosition = Game.viewHeight - 210
 
-  notes = [] as note.Note[]
+  notes = [] as note.NoteData[]
   noteExplosions = [] as note.ExplosionAnimation[]
   songTime = -3
 
@@ -48,7 +48,7 @@ export class Game {
           origin: { x: pos.x, y: Game.receptorPosition },
           time: 0,
         })
-        return
+        break
       }
     }
   }
