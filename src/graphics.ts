@@ -1,3 +1,6 @@
+export const canvas = document.querySelector('canvas') as HTMLCanvasElement
+export const context2d = canvas.getContext('2d')
+
 interface Color {
   toString(): string
 }
@@ -18,62 +21,91 @@ export class ColorHSL implements Color {
   }
 }
 
-abstract class DrawableContext {
-  protected x = 0
-  protected y = 0
-  protected color_: Color = new ColorHSL(1, 1, 1)
+abstract class Drawable {
+  protected color: Color = new ColorHSL(1, 1, 1)
 
-  position(x: number, y: number) {
+  constructor(protected x: number, protected y: number) {}
+
+  setPosition(x: number, y: number) {
     this.x = x
     this.y = y
     return this
   }
 
-  color(color: Color) {
-    this.color_ = color
+  setColor(color: Color) {
+    this.color = color
     return this
   }
 }
 
-export class RectangleContext extends DrawableContext {
-  private width = 0
-  private height = 0
+export class Rectangle extends Drawable {
   private halign = 0.5
   private valign = 0.5
   private angle = 0
 
-  size(w: number, h = w) {
+  constructor(x: number, y: number, private width: number, private height = width) {
+    super(x, y)
+  }
+
+  setSize(w: number, h = w) {
     this.width = w
     this.height = h
     return this
   }
 
-  align(halign: number, valign: number) {
+  setAlign(halign: number, valign: number) {
     this.halign = halign
     this.valign = valign
     return this
   }
 
+  setAngle(angle: number) {
+    this.angle = angle
+    return this
+  }
+
   fill() {
-    if (context2d) {
-      context2d.fillStyle = this.color_.toString()
-      context2d.fillRect(this.x - this.width * this.halign, this.y - this.height * this.valign, this.width, this.height)
-    }
+    if (!context2d) throw "Could not get canvas context"
+
+    this.applyTransform(() => {
+      context2d.fillStyle = this.color.toString()
+      context2d.fillRect(0, 0, this.width, this.height)
+    })
+
     return this
   }
 
   stroke(lineWidth: number) {
-    if (context2d) {
-      context2d.strokeStyle = this.color_.toString()
+    if (!context2d) throw "Could not get canvas context"
+
+    this.applyTransform(() => {
+      context2d.strokeStyle = this.color.toString()
       context2d.lineWidth = lineWidth
-      context2d.strokeRect(this.x - this.width * this.halign, this.y - this.height * this.valign, this.width, this.height)
-    }
+      context2d.strokeRect(0, 0, this.width, this.height)
+    })
+
     return this
   }
-}
 
-export const canvas = document.querySelector('canvas') as HTMLCanvasElement
-export const context2d = canvas.getContext('2d')
+  private getAlignedPosition(): [number, number] {
+    const x = this.x - this.width * this.halign
+    const y = this.y - this.height * this.valign
+    return [x, y]
+  }
+
+  private applyTransform(drawOperation) {
+    if (context2d) {
+      const [x, y] = this.getAlignedPosition()
+      context2d.save()
+      context2d.translate(x, y)
+      context2d.translate(this.width * this.halign, this.height * this.valign)
+      context2d.rotate(this.angle)
+      context2d.translate(-this.width * this.halign, -this.height * this.valign)
+      drawOperation()
+      context2d.restore()
+    }
+  }
+}
 
 export function getWidth(): number {
   return canvas.width
@@ -90,8 +122,4 @@ export function setBackgroundColor(color: Color) {
 export function setDimensions(width: number, height: number) {
   canvas.width = width
   canvas.height = height
-}
-
-export function rectangle() {
-  return new RectangleContext()
 }

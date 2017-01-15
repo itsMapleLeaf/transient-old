@@ -4,10 +4,19 @@ import * as util from './util'
 class Note {
   constructor(public time: number, public position: number) {}
 
-  draw() {
+  getScreenPosition() {
     const x = util.lerp(0, Game.viewWidth, this.position)
     const y = util.lerp(0, Game.noteScale, this.time)
-    graphics.rectangle(x, y, 50, 50).fill()
+    return [x, y]
+  }
+
+  draw() {
+    const [x, y] = this.getScreenPosition()
+    new graphics.Rectangle(x, y, 60)
+      .setAngle(Math.PI * 0.25)
+      .fill()
+      .setSize(70)
+      .stroke(2)
   }
 }
 
