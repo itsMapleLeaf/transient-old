@@ -7,7 +7,7 @@ class Note {
   draw() {
     const x = util.lerp(0, Game.viewWidth, this.position)
     const y = util.lerp(0, Game.noteScale, this.time)
-    graphics.rectangle(x, y, 50, 50)
+    graphics.rectangle(x, y, 50, 50).fill()
   }
 }
 
