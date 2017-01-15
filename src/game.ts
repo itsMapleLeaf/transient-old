@@ -8,11 +8,11 @@ function square(size: number): Rectangle {
 }
 
 function fillRect(c: CanvasRenderingContext2D, [x, y, w, h]: Rectangle) {
-  c.fillRect(x, y, w, h)
+  c.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h))
 }
 
 function strokeRect(c: CanvasRenderingContext2D, [x, y, w, h]: Rectangle) {
-  c.strokeRect(x, y, w, h)
+  c.strokeRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h))
 }
 
 class Note {
@@ -28,6 +28,7 @@ class Note {
     const [x, y] = this.getScreenPosition(songTime)
 
     c.fillStyle = graphics.toRGBAString(graphics.colors.white)
+    c.strokeStyle = graphics.toRGBAString(graphics.fade(graphics.colors.white, 0.7))
     c.lineWidth = 2
 
     c.save()
@@ -74,7 +75,7 @@ export class Game {
       for (const note of this.notes) {
         note.draw(c, this.songTime)
       }
-      c.fillStyle = graphics.toRGBAString(graphics.colors.white)
+      c.fillStyle = graphics.toRGBAString(graphics.fade(graphics.colors.white, 0.5))
       c.fillRect(0, Game.receptorPosition, Game.viewWidth, 10)
     })
   }
