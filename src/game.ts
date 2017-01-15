@@ -12,9 +12,9 @@ class Note {
 
   draw() {
     const [x, y] = this.getScreenPosition()
-    new graphics.Rectangle(x, y, 50)
+
+    new graphics.Rectangle(x, y, 50).setAngle(45)
       .setColor(new graphics.ColorHSL(1, 1, 1, 1))
-      .setAngle(Math.PI * 0.25)
       .fill()
 
       .setColor(new graphics.ColorHSL(1, 1, 1, 0.7))

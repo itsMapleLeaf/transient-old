@@ -99,7 +99,7 @@ export class Rectangle extends Drawable {
       context2d.save()
       context2d.translate(x, y)
       context2d.translate(this.width * this.halign, this.height * this.valign)
-      context2d.rotate(this.angle)
+      context2d.rotate(this.angle / 180 * Math.PI)
       context2d.translate(-this.width * this.halign, -this.height * this.valign)
       drawOperation()
       context2d.restore()
