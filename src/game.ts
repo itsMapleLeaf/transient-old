@@ -10,7 +10,20 @@ export const viewHeight = 1280
 export const viewWidth = 720
 export const receptorPosition = viewHeight - 210
 
-enum NoteState { active, hit, missed, holding }
+enum NoteState {
+  active,
+  hit,
+  missed,
+  holding,
+}
+
+enum NoteJudgement {
+  absolute,
+  perfect,
+  great,
+  bad,
+  none,
+}
 
 interface Drawable {
   draw(c: CanvasRenderingContext2D): void
@@ -72,9 +85,45 @@ class NoteHitAnimation implements Animation {
   }
 }
 
+class JudgementAnimation implements Animation {
+  time = 0
+
+  constructor(public judgement: NoteJudgement) {}
+
+  update(dt: number) {
+    this.time += dt
+    return this
+  }
+
+  isFinished() {
+    return this.time >= 1
+  }
+
+  draw(c: CanvasRenderingContext2D) {
+    const text =
+      this.judgement === NoteJudgement.absolute ? 'ABSOLUTE' :
+      this.judgement === NoteJudgement.perfect ? 'PERFECT' :
+      this.judgement === NoteJudgement.great ? 'GREAT' :
+      this.judgement === NoteJudgement.bad ? 'BAD' :
+      ''
+
+    const offset = (1 - util.clamp(this.time * 4, 0, 1) ** 0.5) * 32
+    const opacity = 1 - util.delta(this.time, 1, 1.3)
+    const judgeColor = color.white.fade(util.clamp(opacity, 0, 1))
+
+    graphics.applyShadow(c, judgeColor.fade(0.3), 20, 0, 0, () => {
+      c.font = '80px Roboto Condensed'
+      c.textAlign = 'center'
+      c.fillStyle = judgeColor.toString()
+      c.fillText(text, viewWidth / 2, viewHeight * 0.3 + offset)
+    })
+  }
+}
+
 export class Game {
   notes = [] as Note[]
   animations = [] as Animation[]
+  judgement = new JudgementAnimation(NoteJudgement.none)
   songTime = -2
 
   constructor() {
@@ -90,6 +139,7 @@ export class Game {
 
   update(dt: number) {
     this.songTime += dt
+    this.judgement.update(dt)
     this.animations = this.animations
       .map(anim => anim.update(dt))
       .filter(anim => !anim.isFinished())
@@ -103,12 +153,22 @@ export class Game {
     for (let i = 0; i < this.notes.length; i++) {
       const note = this.notes[i]
       const pos = note.getScreenPosition().x
-      const goodTiming = Math.abs(note.time - this.songTime) < 0.1
-      const goodPosition = pos - px < 100
+      const timing = Math.abs(note.time - this.songTime)
+      const tapDistance = pos - px
 
-      if (goodTiming && goodPosition) {
-        this.notes.splice(i, 1)
-        this.animations.push(new NoteHitAnimation(new Point(pos, receptorPosition)))
+      if (tapDistance < 100) {
+        const judgement =
+          timing <= 0.015 ? NoteJudgement.absolute :
+          timing <= 0.08 ? NoteJudgement.perfect :
+          timing <= 0.12 ? NoteJudgement.great :
+          timing <= 0.2 ? NoteJudgement.bad :
+          NoteJudgement.none
+
+        if (judgement < NoteJudgement.none) {
+          this.notes.splice(i, 1)
+          this.animations.push(new NoteHitAnimation(new Point(pos, receptorPosition)))
+          this.judgement = new JudgementAnimation(judgement)
+        }
         break
       }
     }
@@ -121,6 +181,7 @@ export class Game {
       })
       this.drawReceptor(c)
       this.animations.forEach(a => a.draw(c))
+      this.judgement.draw(c)
     })
   }
 
