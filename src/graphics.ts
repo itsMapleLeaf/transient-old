@@ -93,7 +93,7 @@ export class Rectangle extends Drawable {
     return [x, y]
   }
 
-  private applyTransform(drawOperation) {
+  private applyTransform(drawOperation: (...args: any[]) => any) {
     if (context2d) {
       const [x, y] = this.getAlignedPosition()
       context2d.save()

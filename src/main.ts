@@ -6,7 +6,7 @@ let time = 0
 window.requestAnimationFrame(function frame(now) {
   window.requestAnimationFrame(frame)
 
-  const elapsed = now - time
+  const elapsed = (now - time) / 1000
   time = now
 
   game.update(elapsed)
