@@ -1,4 +1,5 @@
 import * as graphics from './graphics'
+import * as color from './color'
 import * as util from './util'
 
 type Rectangle = [number, number, number, number]
@@ -27,8 +28,8 @@ class Note {
   draw(c: CanvasRenderingContext2D, songTime: number) {
     const [x, y] = this.getScreenPosition(songTime)
 
-    c.fillStyle = graphics.toRGBAString(graphics.colors.white)
-    c.strokeStyle = graphics.toRGBAString(graphics.fade(graphics.colors.white, 0.7))
+    c.fillStyle = color.toRGBAString(color.white)
+    c.strokeStyle = color.toRGBAString(color.fade(color.white, 0.7))
     c.lineWidth = 2
 
     c.save()
@@ -53,7 +54,7 @@ export class Game {
 
   constructor() {
     graphics.setDimensions(Game.viewWidth, Game.viewHeight)
-    graphics.setBackgroundColor(graphics.colors.black)
+    graphics.setBackgroundColor(color.black)
 
     this.notes.push(new Note(0 / 2, 0 / 4))
     this.notes.push(new Note(1 / 2, 1 / 4))
@@ -75,7 +76,7 @@ export class Game {
       for (const note of this.notes) {
         note.draw(c, this.songTime)
       }
-      c.fillStyle = graphics.toRGBAString(graphics.fade(graphics.colors.white, 0.5))
+      c.fillStyle = color.toRGBAString(color.fade(color.white, 0.5))
       c.fillRect(0, Game.receptorPosition, Game.viewWidth, 10)
     })
   }
