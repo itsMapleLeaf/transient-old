@@ -1,8 +1,9 @@
 import {Game} from './game'
 import {Gameplay} from './gameplay'
+import {SongSelect} from './song-select'
 import {canvas} from './graphics'
 
-const game = new Game(new Gameplay())
+const game = new Game(new SongSelect())
 let time = 0
 
 window.requestAnimationFrame(function frame(now) {
