@@ -4,8 +4,8 @@ export function rgb(r: number, g: number, b: number, a = 1): Color {
   return [r, g, b, a]
 }
 
-export function fade([r, g, b]: Color, alpha: number): Color {
-  return [r, g, b, alpha]
+export function fade([r, g, b, a]: Color, alpha: number): Color {
+  return [r, g, b, a * alpha]
 }
 
 export function toRGBAString([r, g, b, a = 1]: Color): string {
