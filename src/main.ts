@@ -1,7 +1,8 @@
 import {Game} from './game'
-import * as graphics from './graphics'
+import {Gameplay} from './gameplay'
+import {canvas} from './graphics'
 
-const game = new Game()
+const game = new Game(new Gameplay())
 let time = 0
 
 window.requestAnimationFrame(function frame(now) {
@@ -14,4 +15,4 @@ window.requestAnimationFrame(function frame(now) {
   game.draw()
 })
 
-graphics.canvas.addEventListener('pointerdown', event => game.pointerdown(event as PointerEvent))
+canvas.addEventListener('pointerdown', event => game.pointerdown(event as PointerEvent))

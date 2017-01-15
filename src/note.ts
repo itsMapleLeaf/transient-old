@@ -2,6 +2,7 @@ import {Color} from './color'
 import {Drawable, Animation} from './game'
 import {Point} from './point'
 import * as game from './game'
+import * as gameplay from './gameplay'
 import * as graphics from './graphics'
 import * as util from './util'
 
@@ -18,8 +19,8 @@ export class Note implements Drawable {
   constructor(public time: number, public position: number) {}
 
   getScreenPosition(): Point {
-    const x = util.lerp(game.trackLeft, game.viewWidth - game.trackRight, this.position)
-    const y = util.lerp(game.receptorPosition, game.receptorPosition - game.noteSpacing, this.time)
+    const x = util.lerp(gameplay.trackLeft, game.viewWidth - gameplay.trackRight, this.position)
+    const y = util.lerp(gameplay.receptorPosition, gameplay.receptorPosition - gameplay.noteSpacing, this.time)
     return new Point(x, y)
   }
 
