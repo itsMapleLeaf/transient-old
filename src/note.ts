@@ -1,6 +1,6 @@
-import {Point} from './point'
-import {Drawable, Animation} from './game'
 import {Color} from './color'
+import {Drawable, Animation} from './game'
+import {Point} from './point'
 import * as game from './game'
 import * as graphics from './graphics'
 import * as util from './util'

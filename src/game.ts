@@ -1,10 +1,10 @@
 import {Color} from './color'
-import {Point} from './point'
-import {Note, NoteHitAnimation} from './note'
+import {Howl} from 'howler'
 import {Judgement, JudgementAnimation} from './judgement'
+import {Note, NoteHitAnimation} from './note'
+import {Point} from './point'
 import * as graphics from './graphics'
 import * as util from './util'
-import {Howl} from 'howler'
 
 declare var require: Function
 

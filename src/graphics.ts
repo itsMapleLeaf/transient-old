@@ -1,5 +1,5 @@
-import {Point} from './point'
 import {Color} from './color'
+import {Point} from './point'
 import * as util from './util'
 
 export const canvas = document.querySelector('canvas') as HTMLCanvasElement
