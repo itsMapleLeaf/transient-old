@@ -3,28 +3,38 @@ import * as color from './color'
 import * as util from './util'
 import {Point} from './point'
 
-export const viewWidth = 720
-export const viewHeight = 1280
 export const noteScale = 300
 export const trackLeft = 100
 export const trackRight = 100
+export const viewHeight = 1280
+export const viewWidth = 720
 export const receptorPosition = viewHeight - 210
+
+interface Drawable {
+  draw(c: CanvasRenderingContext2D): void
+}
+
+interface Animation extends Drawable {
+  time: number
+  update(dt: number): this
+  isFinished(): boolean
+}
 
 enum NoteState { active, hit, missed, holding }
 
-class Note {
+class Note implements Drawable {
   state = NoteState.active
 
   constructor(public time: number, public position: number) {}
 
-  getScreenPosition(songTime: number): Point {
+  getScreenPosition(): Point {
     const x = util.lerp(trackLeft, viewWidth - trackRight, this.position)
-    const y = util.lerp(receptorPosition, receptorPosition - noteScale, this.time - songTime)
+    const y = util.lerp(receptorPosition, receptorPosition - noteScale, this.time)
     return new Point(x, y)
   }
 
-  draw(c: CanvasRenderingContext2D, songTime: number) {
-    const pos = this.getScreenPosition(songTime)
+  draw(c: CanvasRenderingContext2D) {
+    const pos = this.getScreenPosition()
 
     graphics.applyCenteredRotation(45, pos, c, () => {
       graphics.rectangle(c, -25, -25, 50).fill(color.white)
@@ -33,29 +43,18 @@ class Note {
   }
 }
 
-abstract class Animation {
+class NoteHitAnimation implements Animation {
   time = 0
 
+  constructor(public pos: Point) {}
+
   update(dt: number): this {
-    this.time += dt
+    this.time += dt * 2
     return this
   }
 
   isFinished(): boolean {
     return this.time >= 1
-  }
-
-  abstract draw(c: CanvasRenderingContext2D): void
-}
-
-class NoteHitAnimation extends Animation {
-  constructor(public pos: Point) {
-    super()
-  }
-
-  update(dt: number): this {
-    super.update(dt * 2)
-    return this
   }
 
   draw(c: CanvasRenderingContext2D) {
@@ -110,13 +109,13 @@ export class Game {
 
     for (let i = 0; i < this.notes.length; i++) {
       const note = this.notes[i]
-      const pos = note.getScreenPosition(this.songTime)
+      const pos = note.getScreenPosition().x
       const goodTiming = Math.abs(note.time - this.songTime) < 0.1
-      const goodPosition = pos.x - px < 100
+      const goodPosition = pos - px < 100
 
       if (goodTiming && goodPosition) {
         this.notes.splice(i, 1)
-        this.animations.push(new NoteHitAnimation(new Point(pos.x, receptorPosition)))
+        this.animations.push(new NoteHitAnimation(new Point(pos, receptorPosition)))
         break
       }
     }
@@ -124,7 +123,11 @@ export class Game {
 
   draw() {
     graphics.drawFrame(c => {
-      this.notes.forEach(n => n.draw(c, this.songTime))
+      c.save()
+      c.translate(0, this.songTime * noteScale)
+      this.notes.forEach(n => n.draw(c))
+      c.restore()
+
       this.drawReceptor(c)
       this.animations.forEach(a => a.draw(c))
     })
