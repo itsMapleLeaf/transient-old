@@ -40,6 +40,15 @@ const songs = [
   },
 ]
 
+// class TouchArea {
+//   constructor(
+//     public x: number,
+//     public y: number,
+//     public width: number,
+//     public height: number
+//   ) {}
+// }
+
 export class SongSelect implements GameState {
   scroll = 0
   dragging = false
@@ -67,9 +76,9 @@ export class SongSelect implements GameState {
 
       c.fillStyle = Color.white.toString()
       c.textAlign = 'center'
-      c.font = '80px Roboto Light'
+      c.font = '80px Fira Sans Extra Condensed'
       c.fillText(song.title, cardSize / 2, cardSize * 0.5)
-      c.font = '54px Roboto Light'
+      c.font = '54px Fira Sans Extra Condensed'
       c.fillText(song.artist, cardSize / 2, cardSize * 0.65)
 
       c.translate(0, cardSize + 24)
