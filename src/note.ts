@@ -1,5 +1,4 @@
 import {Color} from './color'
-import {Drawable, Animation} from './game'
 import {Point} from './point'
 import * as game from './game'
 import * as gameplay from './gameplay'
@@ -13,7 +12,7 @@ export enum NoteState {
   holding,
 }
 
-export class Note implements Drawable {
+export class Note {
   state = NoteState.active
 
   constructor(public time: number, public position: number) {}
@@ -33,7 +32,7 @@ export class Note implements Drawable {
   }
 }
 
-export class NoteHitAnimation implements Animation {
+export class NoteHitAnimation {
   time = 0
 
   constructor(public pos: Point) {}

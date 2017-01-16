@@ -1,18 +1,20 @@
-import {Animation, GameState, viewWidth, viewHeight} from './game'
-import {Color} from './color'
-import {Howl} from 'howler'
-import {Judgement, JudgementAnimation} from './judgement'
-import {Note, NoteHitAnimation} from './note'
-import {Point} from './point'
+import { GameState, viewWidth, viewHeight } from './game'
+import { Color } from './color'
+import { Howl } from 'howler'
+import { Judgement, JudgementAnimation } from './judgement'
+import { Note, NoteHitAnimation } from './note'
+import { Point } from './point'
 import * as graphics from './graphics'
 import * as util from './util'
+
+type Animation = NoteHitAnimation | JudgementAnimation
 
 export const noteSpacing = 300 // pixels per second
 export const trackLeft = 100
 export const trackRight = 100
 export const receptorPosition = viewHeight - 210
 
-export class Gameplay implements GameState {
+export class Gameplay extends GameState {
   notes = [] as Note[]
   animations = [] as Animation[]
   judgement = new JudgementAnimation(Judgement.none)
@@ -20,6 +22,7 @@ export class Gameplay implements GameState {
   playing = false
 
   constructor() {
+    super()
     graphics.setDimensions(viewWidth, viewHeight)
     graphics.setBackgroundColor(Color.black)
   }
@@ -54,17 +57,12 @@ export class Gameplay implements GameState {
     }
   }
 
-  pointerup(touch: Point, event: PointerEvent) {}
-  pointermove(touch: Point, event: PointerEvent) {}
-
   getJudgement(timing: number) {
-    return (
-      timing <= 0.015 ? Judgement.absolute :
-      timing <= 0.08 ? Judgement.perfect :
-      timing <= 0.12 ? Judgement.great :
-      timing <= 0.2 ? Judgement.bad :
-      Judgement.none
-    )
+    return timing <= 0.015 ? Judgement.absolute
+      : timing <= 0.08 ? Judgement.perfect
+      : timing <= 0.12 ? Judgement.great
+      : timing <= 0.2 ? Judgement.bad
+      : Judgement.none
   }
 
   draw(c: CanvasRenderingContext2D) {

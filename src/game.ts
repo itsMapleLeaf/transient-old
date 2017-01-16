@@ -1,33 +1,13 @@
-import {Color} from './color'
-import {Howl} from 'howler'
-import {Judgement, JudgementAnimation} from './judgement'
-import {Note, NoteHitAnimation} from './note'
-import {Point} from './point'
+import { Color } from './color'
+import { Howl } from 'howler'
+import { Judgement, JudgementAnimation } from './judgement'
+import { Note, NoteHitAnimation } from './note'
+import { Point } from './point'
 import * as graphics from './graphics'
 import * as util from './util'
 
-declare var require: Function
-
 export const viewHeight = 1280
 export const viewWidth = 720
-
-export interface Drawable {
-  draw(c: CanvasRenderingContext2D): void
-}
-
-export interface Animation extends Drawable {
-  time: number
-  update(dt: number): this
-  isFinished(): boolean
-}
-
-export interface GameState {
-  update(dt: number): GameState
-  draw(c: CanvasRenderingContext2D): void
-  pointerdown(touch: Point, event: PointerEvent): void
-  pointerup(touch: Point, event: PointerEvent): void
-  pointermove(touch: Point, event: PointerEvent): void
-}
 
 export class Game {
   constructor(public state: GameState) {
@@ -39,24 +19,24 @@ export class Game {
     this.state = this.state.update(dt)
   }
 
-  pointerdown(event: PointerEvent) {
-    this.state.pointerdown(getNormalizedCoordinates(event), event)
-  }
-
-  pointerup(event: PointerEvent) {
-    this.state.pointerup(getNormalizedCoordinates(event), event)
-  }
-
-  pointermove(event: PointerEvent) {
-    this.state.pointermove(getNormalizedCoordinates(event), event)
-  }
-
   draw() {
     graphics.drawFrame(c => this.state.draw(c))
   }
+
+  pointerdown(event: PointerEvent) { this.state.pointerdown(normalizeCoordinates(event), event) }
+  pointerup(event: PointerEvent) { this.state.pointerup(normalizeCoordinates(event), event) }
+  pointermove(event: PointerEvent) { this.state.pointermove(normalizeCoordinates(event), event) }
 }
 
-function getNormalizedCoordinates(event: PointerEvent): Point {
+export abstract class GameState {
+  update(dt: number): GameState { return this }
+  draw(c: CanvasRenderingContext2D): void { }
+  pointerdown(touch: Point, event: PointerEvent): void { }
+  pointerup(touch: Point, event: PointerEvent): void { }
+  pointermove(touch: Point, event: PointerEvent): void { }
+}
+
+function normalizeCoordinates(event: PointerEvent): Point {
   const {width, height} = graphics.canvas.getBoundingClientRect()
   const px = event.offsetX / width * viewWidth
   const py = event.offsetY / height * viewHeight

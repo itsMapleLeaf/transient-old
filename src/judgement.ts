@@ -1,4 +1,4 @@
-import {Animation, viewWidth, viewHeight} from './game'
+import {viewWidth, viewHeight} from './game'
 import {Color} from './color'
 import * as graphics from './graphics'
 import * as util from './util'
@@ -11,7 +11,7 @@ export enum Judgement {
   none,
 }
 
-export class JudgementAnimation implements Animation {
+export class JudgementAnimation {
   time = 0
 
   constructor(public judgement: Judgement) {}

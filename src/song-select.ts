@@ -49,7 +49,7 @@ const songs = [
 //   ) {}
 // }
 
-export class SongSelect implements GameState {
+export class SongSelect extends GameState {
   scroll = 0
   dragging = false
   lastTouch = new Point(0, 0)

@@ -16,7 +16,7 @@ module.exports = {
     ]
   },
   plugins: [
-    new HtmlPlugin({ template: './src/index.html' })
+    new HtmlPlugin({ template: './index.html' })
   ],
   resolve: {
     extensions: ['.js', '.ts', '.json']
