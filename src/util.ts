@@ -18,3 +18,7 @@ export function clamp(num: number, min: number, max: number) {
 export function radians(degrees: number) {
   return degrees / 180 * Math.PI
 }
+
+export function sign(num: number) {
+  return num > 0 ? 1 : num < 0 ? -1 : 0
+}

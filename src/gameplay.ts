@@ -35,16 +35,12 @@ export class Gameplay implements GameState {
     return this
   }
 
-  pointerdown(event: PointerEvent) {
-    const {width, height} = graphics.canvas.getBoundingClientRect()
-    const px = event.offsetX / width * viewWidth
-    const py = event.offsetY / height * viewHeight
-
+  pointerdown(touch: Point, event: PointerEvent) {
     for (let i = 0; i < this.notes.length; i++) {
       const note = this.notes[i]
       const pos = note.getScreenPosition().x
       const timing = Math.abs(note.time - this.songTime)
-      const tapDistance = pos - px
+      const tapDistance = Math.abs(pos - touch.x)
 
       if (tapDistance < 100) {
         const judgement = this.getJudgement(timing)
@@ -57,6 +53,9 @@ export class Gameplay implements GameState {
       }
     }
   }
+
+  pointerup(touch: Point, event: PointerEvent) {}
+  pointermove(touch: Point, event: PointerEvent) {}
 
   getJudgement(timing: number) {
     return (

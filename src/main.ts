@@ -17,3 +17,5 @@ window.requestAnimationFrame(function frame(now) {
 })
 
 canvas.addEventListener('pointerdown', event => game.pointerdown(event as PointerEvent))
+canvas.addEventListener('pointerup', event => game.pointerup(event as PointerEvent))
+canvas.addEventListener('pointermove', event => game.pointermove(event as PointerEvent))

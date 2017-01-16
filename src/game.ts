@@ -24,7 +24,9 @@ export interface Animation extends Drawable {
 export interface GameState {
   update(dt: number): GameState
   draw(c: CanvasRenderingContext2D): void
-  pointerdown(event: PointerEvent): void
+  pointerdown(touch: Point, event: PointerEvent): void
+  pointerup(touch: Point, event: PointerEvent): void
+  pointermove(touch: Point, event: PointerEvent): void
 }
 
 export class Game {
@@ -38,10 +40,25 @@ export class Game {
   }
 
   pointerdown(event: PointerEvent) {
-    this.state.pointerdown(event)
+    this.state.pointerdown(getNormalizedCoordinates(event), event)
+  }
+
+  pointerup(event: PointerEvent) {
+    this.state.pointerup(getNormalizedCoordinates(event), event)
+  }
+
+  pointermove(event: PointerEvent) {
+    this.state.pointermove(getNormalizedCoordinates(event), event)
   }
 
   draw() {
     graphics.drawFrame(c => this.state.draw(c))
   }
+}
+
+function getNormalizedCoordinates(event: PointerEvent): Point {
+  const {width, height} = graphics.canvas.getBoundingClientRect()
+  const px = event.offsetX / width * viewWidth
+  const py = event.offsetY / height * viewHeight
+  return new Point(px, py)
 }

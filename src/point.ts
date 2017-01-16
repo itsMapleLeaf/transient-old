@@ -4,4 +4,8 @@ export class Point {
   add(other: Point) {
     return new Point(this.x + other.x, this.y + other.y)
   }
+
+  subtract(other: Point) {
+    return new Point(this.x - other.x, this.y - other.y)
+  }
 }
