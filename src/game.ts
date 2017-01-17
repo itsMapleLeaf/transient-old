@@ -42,9 +42,17 @@ export class Game {
 
   update(dt: number) {
     this.songTime += dt
-    this.entities = this.entities.filter(ent => this.stage.children.indexOf(ent.sprite) != null)
-    this.entities.forEach(ent => ent.update(dt))
-    this.entities.forEach(ent => ent.handleMessage('updateSongTime', this.songTime))
+
+    for (let i = this.entities.length - 1; i >= 0; i--) {
+      const ent = this.entities[i]
+      if (ent.alive) {
+        ent.update(dt)
+        ent.handleMessage('updateSongTime', this.songTime)
+      } else {
+        this.entities.splice(i, 1)
+      }
+    }
+
     this.renderer.render(this.stage)
   }
 

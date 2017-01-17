@@ -6,6 +6,7 @@ import * as util from './util'
 
 export abstract class Entity {
   abstract sprite: pixi.Container
+  alive = true
   update(dt: number) {}
   handleMessage(msg: string, ...params: any[]) {}
 }
@@ -69,7 +70,7 @@ export class NoteHitAnimation extends Entity {
       this.sprite.alpha = 1 - (this.time ** 2)
       this.blurFilter.blur = Math.max((1 - this.time * 0.5) * 20, 0)
     } else {
-      if (this.sprite.parent) this.sprite.parent.removeChild(this.sprite)
+      this.alive = false
     }
   }
 }
