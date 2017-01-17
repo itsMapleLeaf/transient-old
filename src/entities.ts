@@ -1,6 +1,7 @@
 import * as pixi from 'pixi.js'
 
 import {createRect} from './shapes'
+import {WorldEvent, SongTimeEvent, TapInputEvent} from './events'
 import * as game from './game'
 import * as util from './util'
 
@@ -9,20 +10,6 @@ export abstract class Entity {
   alive = true
   update(dt: number) {}
   handleEvent(msg: WorldEvent) {}
-}
-
-export abstract class WorldEvent {}
-
-export class SongTimeEvent extends WorldEvent {
-  constructor(public time: number) {
-    super()
-  }
-}
-
-export class TapInputEvent extends WorldEvent {
-  constructor(public point: pixi.Point, public songTime: number, public world: World) {
-    super()
-  }
 }
 
 export class World {

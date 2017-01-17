@@ -1,7 +1,8 @@
 import * as pixi from 'pixi.js'
 
 import {createRect} from './shapes'
-import {World, NoteContainer, NoteHitAnimation, SongTimeEvent, TapInputEvent} from './entities'
+import {World, NoteContainer, NoteHitAnimation} from './entities'
+import {SongTimeEvent, TapInputEvent} from './events'
 import * as util from './util'
 
 export const viewWidth = 540
@@ -40,6 +41,5 @@ export class Game {
 
   pointerdown(event: pixi.interaction.InteractionEvent) {
     this.world.send(new TapInputEvent(event.data.global, this.songTime, this.world))
-    // this.world.add(new NoteHitAnimation(event.data.global.x, receptorPosition))
   }
 }
