@@ -8,7 +8,21 @@ export abstract class Entity {
   abstract sprite: pixi.Container
   alive = true
   update(dt: number) {}
-  handleMessage(msg: string, ...params: any[]) {}
+  handleEvent(msg: WorldEvent) {}
+}
+
+export abstract class WorldEvent {}
+
+export class SongTimeEvent extends WorldEvent {
+  constructor(public time: number) {
+    super()
+  }
+}
+
+export class TapInputEvent extends WorldEvent {
+  constructor(public point: pixi.Point, public songTime: number, public world: World) {
+    super()
+  }
 }
 
 export class World {
@@ -31,8 +45,8 @@ export class World {
     })
   }
 
-  send(msg: string, ...params: any[]) {
-    this.entities.forEach(ent => ent.handleMessage(msg, params))
+  send(msg: WorldEvent) {
+    this.entities.forEach(ent => ent.handleEvent(msg))
   }
 }
 
@@ -64,9 +78,18 @@ export class NoteContainer extends Entity {
     this.sprite.addChild(note.sprite)
   }
 
-  handleMessage(msg: string, ...params: any[]) {
-    if (msg === 'updateSongTime') {
-      this.sprite.position.y = util.lerp(0, game.noteSpacing, params[0]) + game.receptorPosition
+  handleEvent(msg: WorldEvent) {
+    if (msg instanceof SongTimeEvent) {
+      this.sprite.position.y = util.lerp(0, game.noteSpacing, msg.time) + game.receptorPosition
+    }
+    if (msg instanceof TapInputEvent) {
+      for (const note of this.notes) {
+        if (Math.abs(note.sprite.position.x - msg.point.x) < 80 && Math.abs(note.time - msg.songTime) < 0.3) {
+          msg.world.add(new NoteHitAnimation(note.sprite.position.x, game.receptorPosition))
+          note.sprite.alpha = 0
+          break
+        }
+      }
     }
   }
 }

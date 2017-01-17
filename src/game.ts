@@ -1,7 +1,7 @@
 import * as pixi from 'pixi.js'
 
 import {createRect} from './shapes'
-import {World, NoteContainer, NoteHitAnimation} from './entities'
+import {World, NoteContainer, NoteHitAnimation, SongTimeEvent, TapInputEvent} from './entities'
 import * as util from './util'
 
 export const viewWidth = 540
@@ -34,12 +34,12 @@ export class Game {
   update(dt: number) {
     this.songTime += dt
     this.world.update(dt)
-    this.world.send('updateSongTime', this.songTime)
+    this.world.send(new SongTimeEvent(this.songTime))
     this.renderer.render(this.world.stage)
   }
 
   pointerdown(event: pixi.interaction.InteractionEvent) {
-    console.log(event)
-    this.world.add(new NoteHitAnimation(event.data.global.x, receptorPosition))
+    this.world.send(new TapInputEvent(event.data.global, this.songTime, this.world))
+    // this.world.add(new NoteHitAnimation(event.data.global.x, receptorPosition))
   }
 }
