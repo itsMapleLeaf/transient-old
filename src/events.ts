@@ -10,7 +10,7 @@ export class SongTimeEvent extends WorldEvent {
 }
 
 export class TapInputEvent extends WorldEvent {
-  constructor(public point: Point, public songTime: number, public world: World) {
+  constructor(public point: Point, public songTime: number) {
     super()
   }
 }

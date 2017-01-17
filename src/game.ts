@@ -40,6 +40,6 @@ export class Game {
   }
 
   pointerdown(event: pixi.interaction.InteractionEvent) {
-    this.world.send(new TapInputEvent(event.data.global, this.songTime, this.world))
+    this.world.send(new TapInputEvent(event.data.global, this.songTime))
   }
 }

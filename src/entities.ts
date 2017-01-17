@@ -8,8 +8,8 @@ import * as util from './util'
 export abstract class Entity {
   abstract sprite: pixi.Container
   alive = true
-  update(dt: number) {}
-  handleEvent(msg: WorldEvent) {}
+  update(world: World, dt: number) {}
+  handleEvent(world: World, msg: WorldEvent) {}
 }
 
 export class World {
@@ -24,7 +24,7 @@ export class World {
   update(dt: number) {
     this.entities = this.entities.filter(ent => {
       if (ent.alive) {
-        ent.update(dt)
+        ent.update(this, dt)
       } else {
         this.stage.removeChild(ent.sprite)
       }
@@ -33,7 +33,7 @@ export class World {
   }
 
   send(msg: WorldEvent) {
-    this.entities.forEach(ent => ent.handleEvent(msg))
+    this.entities.forEach(ent => ent.handleEvent(this, msg))
   }
 }
 
@@ -65,14 +65,14 @@ export class NoteContainer extends Entity {
     this.sprite.addChild(note.sprite)
   }
 
-  handleEvent(msg: WorldEvent) {
+  handleEvent(world: World, msg: WorldEvent) {
     if (msg instanceof SongTimeEvent) {
       this.sprite.position.y = util.lerp(0, game.noteSpacing, msg.time) + game.receptorPosition
     }
     if (msg instanceof TapInputEvent) {
       for (const note of this.notes) {
         if (Math.abs(note.sprite.position.x - msg.point.x) < 80 && Math.abs(note.time - msg.songTime) < 0.3) {
-          msg.world.add(new NoteHitAnimation(note.sprite.position.x, game.receptorPosition))
+          world.add(new NoteHitAnimation(note.sprite.position.x, game.receptorPosition))
           note.sprite.alpha = 0
           break
         }
@@ -98,7 +98,7 @@ export class NoteHitAnimation extends Entity {
     this.sprite.rotation = util.radians(45)
   }
 
-  update(dt: number) {
+  update(world: World, dt: number) {
     this.time += dt / 0.4
     if (this.time < 1) {
       this.sprite.position.y = this.y + (this.time ** 2) * 80
