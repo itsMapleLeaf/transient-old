@@ -10,36 +10,46 @@ export const noteSpacing = 300 // pixels per second
 export const trackMargin = 80
 export const receptorPosition = viewHeight * 0.82
 
-export class Game {
-  entities = [] as Entity[]
-  input = new pixi.interaction.InteractionManager(this.renderer)
-  noteContainer = new pixi.Container()
+class NoteContainer extends Entity {
   notes = [] as Note[]
-  songTime = -2
+  sprite = new pixi.Container()
+
+  addNote(time: number, position: number) {
+    const note = new Note(time, position)
+    this.notes.push(note)
+    this.sprite.addChild(note.sprite)
+  }
+
+  handleMessage(msg: string, ...params: any[]) {
+    if (msg === 'updateSongTime') {
+      this.sprite.position.y = util.lerp(0, noteSpacing, params[0]) + receptorPosition
+    }
+  }
+}
+
+export class Game {
   stage = new pixi.Container()
+  input = new pixi.interaction.InteractionManager(this.renderer)
+  entities = [] as Entity[]
+  songTime = -2
 
   constructor(public renderer: pixi.WebGLRenderer | pixi.CanvasRenderer) {
     // test notes
-    this.addNote(0 / 2, 0 / 4)
-    this.addNote(1 / 2, 1 / 4)
-    this.addNote(2 / 2, 2 / 4)
-    this.addNote(3 / 2, 3 / 4)
-    this.addNote(4 / 2, 4 / 4)
+    const notes = new NoteContainer()
+    notes.addNote(0 / 2, 0 / 4)
+    notes.addNote(1 / 2, 1 / 4)
+    notes.addNote(2 / 2, 2 / 4)
+    notes.addNote(3 / 2, 3 / 4)
+    notes.addNote(4 / 2, 4 / 4)
 
     // receptor
     this.stage.addChild(createRect(viewWidth / 2, receptorPosition, viewWidth, 10).fill(0xffffff, 0.5))
 
     // note container
-    this.stage.addChild(this.noteContainer)
+    this.addEntity(notes)
 
     // events
     this.input.on('pointerdown', this.pointerdown, this)
-  }
-
-  addNote(time: number, position: number) {
-    const note = new Note(time, position)
-    this.notes.push(note)
-    this.noteContainer.addChild(note.sprite)
   }
 
   addEntity(ent: Entity) {
@@ -51,7 +61,7 @@ export class Game {
     this.songTime += dt
     this.entities = this.entities.filter(ent => this.stage.children.indexOf(ent.sprite) != null)
     this.entities.forEach(ent => ent.update(dt))
-    this.noteContainer.position.y = util.lerp(0, noteSpacing, this.songTime) + receptorPosition
+    this.entities.forEach(ent => ent.handleMessage('updateSongTime', this.songTime))
     this.renderer.render(this.stage)
   }
 

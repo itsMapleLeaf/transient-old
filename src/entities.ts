@@ -4,15 +4,18 @@ import {createRect} from './shapes'
 import {trackMargin, viewWidth, noteSpacing} from './game'
 import * as util from './util'
 
-export interface Entity {
-  update(dt: number): void
-  sprite: pixi.Container
+export abstract class Entity {
+  abstract sprite: pixi.Container
+  update(dt: number) {}
+  handleMessage(msg: string, ...params: any[]) {}
 }
 
-export class Note implements Entity {
+export class Note extends Entity {
   sprite = new pixi.Container()
 
   constructor(public time: number, public position: number) {
+    super()
+
     // inner square
     this.sprite.addChild(createRect(0, 0, 40).fill())
 
@@ -23,11 +26,9 @@ export class Note implements Entity {
     this.sprite.position.y = util.lerp(0, noteSpacing, time) * -1
     this.sprite.rotation = util.radians(45)
   }
-
-  update() {}
 }
 
-export class NoteHitAnimation implements Entity {
+export class NoteHitAnimation extends Entity {
   sprite = new pixi.Container()
   rect = createRect(0, 0, 50).fill()
   glow = createRect(0, 0, 50).fill()
@@ -35,6 +36,8 @@ export class NoteHitAnimation implements Entity {
   time = 0
 
   constructor(x: number, private y: number) {
+    super()
+
     this.glow.filters = [this.blurFilter]
 
     this.sprite.addChild(this.rect, this.glow)
@@ -43,7 +46,7 @@ export class NoteHitAnimation implements Entity {
   }
 
   update(dt: number) {
-    this.time += dt / 0.3
+    this.time += dt / 0.4
     if (this.time < 1) {
       this.sprite.position.y = this.y + (this.time ** 2) * 80
       this.sprite.alpha = 1 - (this.time ** 2)
