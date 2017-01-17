@@ -1,5 +1,7 @@
-import {createRect} from './shapes'
 import * as pixi from 'pixi.js'
+
+import {createRect} from './shapes'
+import {Note} from './entities'
 import * as util from './util'
 
 export const viewWidth = 540
@@ -7,22 +9,6 @@ export const viewHeight = 960
 export const noteSpacing = 300 // pixels per second
 export const trackMargin = 80
 export const receptorPosition = viewHeight * 0.82
-
-class Note {
-  sprite = new pixi.Container()
-
-  constructor(public time: number, public position: number) {
-    // inner square
-    this.sprite.addChild(createRect(0, 0, 40).fill(0xffffff))
-
-    // outer square
-    this.sprite.addChild(createRect(0, 0, 50).stroke(1, 0xffffff))
-
-    this.sprite.position.x = util.lerp(trackMargin, viewWidth - trackMargin, position)
-    this.sprite.position.y = util.lerp(0, noteSpacing, time) * -1
-    this.sprite.rotation = Math.PI * 0.25
-  }
-}
 
 export class Game {
   stage = new pixi.Container()
