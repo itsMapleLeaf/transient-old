@@ -11,6 +11,31 @@ export abstract class Entity {
   handleMessage(msg: string, ...params: any[]) {}
 }
 
+export class World {
+  stage = new pixi.Container()
+  entities = [] as Entity[]
+
+  addEntity(ent: Entity) {
+    this.entities.push(ent)
+    this.stage.addChild(ent.sprite)
+  }
+
+  update(dt: number) {
+    this.entities = this.entities.filter(ent => {
+      if (ent.alive) {
+        ent.update(dt)
+      } else {
+        this.stage.removeChild(ent.sprite)
+      }
+      return ent.alive
+    })
+  }
+
+  sendMessage(msg: string, ...params: any[]) {
+    this.entities.forEach(ent => ent.handleMessage(msg, params))
+  }
+}
+
 export class Note extends Entity {
   sprite = new pixi.Container()
 

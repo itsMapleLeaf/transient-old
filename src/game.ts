@@ -11,13 +11,11 @@ export const trackMargin = 80
 export const receptorPosition = viewHeight * 0.82
 
 export class Game {
-  stage = new pixi.Container()
+  world = new entities.World()
   input = new pixi.interaction.InteractionManager(this.renderer)
-  entities = [] as entities.Entity[]
   songTime = -2
 
   constructor(public renderer: pixi.WebGLRenderer | pixi.CanvasRenderer) {
-    // test notes
     const notes = new entities.NoteContainer()
     notes.addNote(0 / 2, 0 / 4)
     notes.addNote(1 / 2, 1 / 4)
@@ -25,39 +23,23 @@ export class Game {
     notes.addNote(3 / 2, 3 / 4)
     notes.addNote(4 / 2, 4 / 4)
 
-    // receptor
-    this.stage.addChild(createRect(viewWidth / 2, receptorPosition, viewWidth, 10).fill(0xffffff, 0.5))
+    // this.stage.addChild(createRect(viewWidth / 2, receptorPosition, viewWidth, 10).fill(0xffffff, 0.5))
 
-    // note container
-    this.addEntity(notes)
+    this.world.addEntity(notes)
 
     // events
     this.input.on('pointerdown', this.pointerdown, this)
   }
 
-  addEntity(ent: entities.Entity) {
-    this.entities.push(ent)
-    this.stage.addChild(ent.sprite)
-  }
-
   update(dt: number) {
     this.songTime += dt
-
-    for (let i = this.entities.length - 1; i >= 0; i--) {
-      const ent = this.entities[i]
-      if (ent.alive) {
-        ent.update(dt)
-        ent.handleMessage('updateSongTime', this.songTime)
-      } else {
-        this.entities.splice(i, 1)
-      }
-    }
-
-    this.renderer.render(this.stage)
+    this.world.update(dt)
+    this.world.sendMessage('updateSongTime', this.songTime)
+    this.renderer.render(this.world.stage)
   }
 
   pointerdown(event: pixi.interaction.InteractionEvent) {
     console.log(event)
-    this.addEntity(new entities.NoteHitAnimation(event.data.global.x, receptorPosition))
+    this.world.addEntity(new entities.NoteHitAnimation(event.data.global.x, receptorPosition))
   }
 }
