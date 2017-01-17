@@ -37,12 +37,13 @@ export class World {
   }
 }
 
-export class Note extends Entity {
+enum NoteState { active, hit, missed, holding }
+
+export class Note {
   sprite = new pixi.Container()
+  state = NoteState.active
 
   constructor(public time: number, public position: number) {
-    super()
-
     // inner square
     this.sprite.addChild(createRect(0, 0, 40).fill())
 
@@ -71,9 +72,10 @@ export class NoteContainer extends Entity {
     }
     if (msg instanceof TapInputEvent) {
       for (const note of this.notes) {
-        if (Math.abs(note.sprite.position.x - msg.point.x) < 80 && Math.abs(note.time - msg.songTime) < 0.3) {
-          world.add(new NoteHitAnimation(note.sprite.position.x, game.receptorPosition))
+        if (note.state === NoteState.active && Math.abs(note.sprite.position.x - msg.point.x) < 80 && Math.abs(note.time - msg.songTime) < 0.3) {
+          note.state = NoteState.hit
           note.sprite.alpha = 0
+          world.add(new NoteHitAnimation(note.sprite.position.x, game.receptorPosition))
           break
         }
       }
