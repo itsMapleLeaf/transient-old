@@ -15,7 +15,7 @@ export class World {
   stage = new pixi.Container()
   entities = [] as Entity[]
 
-  addEntity(ent: Entity) {
+  add(ent: Entity) {
     this.entities.push(ent)
     this.stage.addChild(ent.sprite)
   }
@@ -31,7 +31,7 @@ export class World {
     })
   }
 
-  sendMessage(msg: string, ...params: any[]) {
+  send(msg: string, ...params: any[]) {
     this.entities.forEach(ent => ent.handleMessage(msg, params))
   }
 }
