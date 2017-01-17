@@ -1,7 +1,7 @@
 import * as pixi from 'pixi.js'
 
 import {createRect} from './shapes'
-import {Entity, Note, NoteHitAnimation} from './entities'
+import * as entities from './entities'
 import * as util from './util'
 
 export const viewWidth = 540
@@ -10,32 +10,15 @@ export const noteSpacing = 300 // pixels per second
 export const trackMargin = 80
 export const receptorPosition = viewHeight * 0.82
 
-class NoteContainer extends Entity {
-  notes = [] as Note[]
-  sprite = new pixi.Container()
-
-  addNote(time: number, position: number) {
-    const note = new Note(time, position)
-    this.notes.push(note)
-    this.sprite.addChild(note.sprite)
-  }
-
-  handleMessage(msg: string, ...params: any[]) {
-    if (msg === 'updateSongTime') {
-      this.sprite.position.y = util.lerp(0, noteSpacing, params[0]) + receptorPosition
-    }
-  }
-}
-
 export class Game {
   stage = new pixi.Container()
   input = new pixi.interaction.InteractionManager(this.renderer)
-  entities = [] as Entity[]
+  entities = [] as entities.Entity[]
   songTime = -2
 
   constructor(public renderer: pixi.WebGLRenderer | pixi.CanvasRenderer) {
     // test notes
-    const notes = new NoteContainer()
+    const notes = new entities.NoteContainer()
     notes.addNote(0 / 2, 0 / 4)
     notes.addNote(1 / 2, 1 / 4)
     notes.addNote(2 / 2, 2 / 4)
@@ -52,7 +35,7 @@ export class Game {
     this.input.on('pointerdown', this.pointerdown, this)
   }
 
-  addEntity(ent: Entity) {
+  addEntity(ent: entities.Entity) {
     this.entities.push(ent)
     this.stage.addChild(ent.sprite)
   }
@@ -67,6 +50,6 @@ export class Game {
 
   pointerdown(event: pixi.interaction.InteractionEvent) {
     console.log(event)
-    this.addEntity(new NoteHitAnimation(event.data.global.x, receptorPosition))
+    this.addEntity(new entities.NoteHitAnimation(event.data.global.x, receptorPosition))
   }
 }

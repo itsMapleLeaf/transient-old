@@ -1,7 +1,7 @@
 import * as pixi from 'pixi.js'
 
 import {createRect} from './shapes'
-import {trackMargin, viewWidth, noteSpacing} from './game'
+import * as game from './game'
 import * as util from './util'
 
 export abstract class Entity {
@@ -22,9 +22,26 @@ export class Note extends Entity {
     // outer square
     this.sprite.addChild(createRect(0, 0, 50).stroke(1))
 
-    this.sprite.position.x = util.lerp(trackMargin, viewWidth - trackMargin, position)
-    this.sprite.position.y = util.lerp(0, noteSpacing, time) * -1
+    this.sprite.position.x = util.lerp(game.trackMargin, game.viewWidth - game.trackMargin, position)
+    this.sprite.position.y = util.lerp(0, game.noteSpacing, time) * -1
     this.sprite.rotation = util.radians(45)
+  }
+}
+
+export class NoteContainer extends Entity {
+  notes = [] as Note[]
+  sprite = new pixi.Container()
+
+  addNote(time: number, position: number) {
+    const note = new Note(time, position)
+    this.notes.push(note)
+    this.sprite.addChild(note.sprite)
+  }
+
+  handleMessage(msg: string, ...params: any[]) {
+    if (msg === 'updateSongTime') {
+      this.sprite.position.y = util.lerp(0, game.noteSpacing, params[0]) + game.receptorPosition
+    }
   }
 }
 
