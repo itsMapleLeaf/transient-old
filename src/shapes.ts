@@ -7,13 +7,13 @@ export function createRect(x: number, y: number, width: number, height = width) 
   rect.pivot.set(width / 2, height / 2)
 
   return {
-    fill(color: number, alpha?: number) {
+    fill(color: number = 0xffffff, alpha?: number) {
       rect.beginFill(color, alpha)
       rect.drawRect(0, 0, width, height)
       rect.endFill()
       return rect
     },
-    stroke(lineWidth: number, color: number, alpha?: number) {
+    stroke(lineWidth: number, color: number = 0xffffff, alpha?: number) {
       rect.lineStyle(lineWidth, color, alpha)
       rect.beginFill(0, 0)
       rect.drawRect(0, 0, width, height)

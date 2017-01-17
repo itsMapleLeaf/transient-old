@@ -1,7 +1,7 @@
 import * as pixi from 'pixi.js'
 
 import {createRect} from './shapes'
-import {Note} from './entities'
+import {Entity, Note, NoteHitAnimation} from './entities'
 import * as util from './util'
 
 export const viewWidth = 540
@@ -11,11 +11,12 @@ export const trackMargin = 80
 export const receptorPosition = viewHeight * 0.82
 
 export class Game {
-  stage = new pixi.Container()
-  noteContainer = new pixi.Container()
+  entities = [] as Entity[]
   input = new pixi.interaction.InteractionManager(this.renderer)
+  noteContainer = new pixi.Container()
   notes = [] as Note[]
   songTime = -2
+  stage = new pixi.Container()
 
   constructor(public renderer: pixi.WebGLRenderer | pixi.CanvasRenderer) {
     // test notes
@@ -41,13 +42,21 @@ export class Game {
     this.noteContainer.addChild(note.sprite)
   }
 
+  addEntity(ent: Entity) {
+    this.entities.push(ent)
+    this.stage.addChild(ent.sprite)
+  }
+
   update(dt: number) {
     this.songTime += dt
+    this.entities = this.entities.filter(ent => this.stage.children.indexOf(ent.sprite) != null)
+    this.entities.forEach(ent => ent.update(dt))
     this.noteContainer.position.y = util.lerp(0, noteSpacing, this.songTime) + receptorPosition
     this.renderer.render(this.stage)
   }
 
-  pointerdown(event: PointerEvent) {
+  pointerdown(event: pixi.interaction.InteractionEvent) {
     console.log(event)
+    this.addEntity(new NoteHitAnimation(event.data.global.x, receptorPosition))
   }
 }

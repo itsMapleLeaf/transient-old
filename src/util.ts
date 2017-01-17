@@ -9,3 +9,9 @@ export function delta(num: number, a: number, b: number) {
 export function radians(degrees: number) {
   return degrees / 180 * Math.PI
 }
+
+export function clamp(n: number, min: number, max: number) {
+  return n > max ? max
+    : n < min ? min
+    : n
+}
