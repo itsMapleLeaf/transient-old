@@ -1,10 +1,5 @@
 import * as pixi from 'pixi.js'
 
-import {createRect} from './shapes'
-import {World, NoteContainer, NoteHitAnimation} from './entities'
-import {SongTimeEvent, TapInputEvent} from './events'
-import * as util from './util'
-
 export const viewWidth = 540
 export const viewHeight = 960
 export const noteSpacing = 300 // pixels per second
@@ -12,34 +7,24 @@ export const trackMargin = 80
 export const receptorPosition = viewHeight * 0.82
 
 export class Game {
-  world = new World()
   input = new pixi.interaction.InteractionManager(this.renderer)
-  songTime = -2
 
-  constructor(public renderer: pixi.WebGLRenderer | pixi.CanvasRenderer) {
-    const notes = new NoteContainer()
-    notes.addNote(0 / 2, 0 / 4)
-    notes.addNote(1 / 2, 1 / 4)
-    notes.addNote(2 / 2, 2 / 4)
-    notes.addNote(3 / 2, 3 / 4)
-    notes.addNote(4 / 2, 4 / 4)
-
-    // this.stage.addChild(createRect(viewWidth / 2, receptorPosition, viewWidth, 10).fill(0xffffff, 0.5))
-
-    this.world.add(notes)
-
-    // events
-    this.input.on('pointerdown', this.pointerdown, this)
+  constructor(public renderer: pixi.WebGLRenderer | pixi.CanvasRenderer, public state: GameState) {
+    this.input.on('pointerdown', (event: pixi.interaction.InteractionEvent) => this.state.pointerdown(event))
+    this.input.on('pointerup', (event: pixi.interaction.InteractionEvent) => this.state.pointerup(event))
+    this.input.on('pointermoved', (event: pixi.interaction.InteractionEvent) => this.state.pointermoved(event))
   }
 
   update(dt: number) {
-    this.songTime += dt
-    this.world.update(dt)
-    this.world.send(new SongTimeEvent(this.songTime))
-    this.renderer.render(this.world.stage)
+    this.state.update(dt)
+    this.state.render(this.renderer)
   }
+}
 
-  pointerdown(event: pixi.interaction.InteractionEvent) {
-    this.world.send(new TapInputEvent(event.data.global, this.songTime))
-  }
+export abstract class GameState {
+  update(dt: number): void {}
+  render(renderer: pixi.WebGLRenderer | pixi.CanvasRenderer): void {}
+  pointerdown(event: pixi.interaction.InteractionEvent): void {}
+  pointerup(event: pixi.interaction.InteractionEvent): void {}
+  pointermoved(event: pixi.interaction.InteractionEvent): void {}
 }
