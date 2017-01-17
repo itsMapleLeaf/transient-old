@@ -1,6 +1,6 @@
 import * as pixi from 'pixi.js'
 
-export function createRectangle(x: number, y: number, width: number, height = width) {
+export function createRect(x: number, y: number, width: number, height = width) {
   const rect = new pixi.Graphics()
 
   rect.position.set(x, y)

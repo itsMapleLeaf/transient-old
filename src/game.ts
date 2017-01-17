@@ -1,4 +1,4 @@
-import {createRectangle} from './shapes'
+import {createRect} from './shapes'
 import * as pixi from 'pixi.js'
 import * as util from './util'
 
@@ -12,8 +12,8 @@ class Note {
   sprite = new pixi.Container()
 
   constructor(public time: number, public position: number) {
-    this.sprite.addChild(createRectangle(0, 0, 40).fill(0xffffff))
-    this.sprite.addChild(createRectangle(0, 0, 50).stroke(1, 0xffffff))
+    this.sprite.addChild(createRect(0, 0, 40).fill(0xffffff))
+    this.sprite.addChild(createRect(0, 0, 50).stroke(1, 0xffffff))
 
     this.sprite.position.x = util.lerp(trackMargin, viewWidth - trackMargin, position)
     this.sprite.position.y = util.lerp(0, noteSpacing, time) * -1
@@ -35,7 +35,7 @@ export class Game {
     this.addNote(3 / 2, 3 / 4)
     this.addNote(4 / 2, 4 / 4)
 
-    this.stage.addChild(createRectangle(viewWidth / 2, receptorPosition, viewWidth, 10).fill(0xffffff, 0.5))
+    this.stage.addChild(createRect(viewWidth / 2, receptorPosition, viewWidth, 10).fill(0xffffff, 0.5))
     this.stage.addChild(this.noteContainer)
 
     this.input.on('pointerdown', this.pointerdown, this)
