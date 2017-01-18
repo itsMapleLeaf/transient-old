@@ -5,11 +5,31 @@ import {createRect} from './shapes'
 import * as util from './util'
 
 export const noteSpacing = 300 // pixels per second
-export const trackMargin = 80
-export const receptorPosition = viewHeight * 0.82
+export const trackMargin = 100
+export const receptorPosition = viewHeight * 0.88
 
-function createReceptor() {
-  return createRect(viewWidth / 2, receptorPosition, viewWidth, 10).fill(0xffffff, 0.5)
+function createPlayfield() {
+  const sprite = new pixi.Container()
+  const blur = new pixi.filters.BlurFilter(50, 20)
+
+  const shade = createRect(viewWidth / 2, viewHeight / 2, viewWidth - trackMargin, viewHeight).fill(0, 0.3)
+  const receptor = createRect(viewWidth / 2, receptorPosition, viewWidth - trackMargin, 2).fill(0xffffff, 0.5)
+  const left = createRect(trackMargin / 2, viewHeight / 2, 2, viewHeight).fill(0xffffff, 0.5)
+  const right = createRect(viewWidth - trackMargin / 2, viewHeight / 2, 2, viewHeight).fill(0xffffff, 0.5)
+  const glow = createRect(viewWidth / 2, receptorPosition, viewWidth - trackMargin, 50).fill(0xffffff, 0.2)
+
+  sprite.addChild(shade)
+
+  sprite.addChild(receptor)
+  sprite.addChild(left)
+  sprite.addChild(right)
+  sprite.addChild(glow)
+
+  glow.filters = [blur]
+
+  blur.blurX = 0
+
+  return sprite
 }
 
 function getNoteOffset(songTime: number) {
@@ -24,7 +44,7 @@ class Note {
 
   constructor(public time: number, public position: number) {
     this.sprite.addChild(createRect(0, 0, 40).fill())
-    this.sprite.addChild(createRect(0, 0, 50).stroke(1))
+    this.sprite.addChild(createRect(0, 0, 50).stroke(2))
     this.sprite.rotation = util.radians(45)
     this.sprite.position = this.getScreenPosition()
   }
@@ -77,9 +97,9 @@ export class Gameplay extends GameState {
   ]
 
   stage = new pixi.Container()
+  playfield = this.stage.addChild(createPlayfield())
   noteLayer = this.stage.addChild(new pixi.Container())
   animationLayer = this.stage.addChild(new pixi.Container())
-  receptor = this.stage.addChild(createReceptor())
 
   update(dt: number) {
     this.songTime += dt
