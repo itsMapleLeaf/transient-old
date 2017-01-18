@@ -3,6 +3,7 @@ import * as pixi from 'pixi.js'
 import {viewWidth} from './game'
 import {trackMargin, noteSpacing} from './gameplay'
 import {RectangleFillSprite, RectangleLineSprite} from './rect'
+import {Glow} from './pixi-utils'
 import * as util from './util'
 
 export enum NoteState { active, hit, missed, holding }
@@ -40,13 +41,12 @@ export class Note extends pixi.Container {
 }
 
 export class NoteHitAnimation extends pixi.Container {
+  body = this.addChild(new RectangleFillSprite(0, 0, 50))
+  glow = this.addChild(new Glow(this.body, 20))
   time = 0
-  blur = new pixi.filters.BlurFilter()
 
   constructor(public startX: number, public startY: number) {
     super()
-    this.addChild(new RectangleFillSprite(0, 0, 50))
-    this.addChild(new RectangleFillSprite(0, 0, 50)).filters = [this.blur]
     this.position.set(startX, startY)
     this.rotation = util.radians(45)
   }
@@ -59,7 +59,7 @@ export class NoteHitAnimation extends pixi.Container {
       this.position.x = this.startX
       this.position.y = this.startY + this.time ** 2 * 100
       this.alpha = 1 - this.time ** 2
-      this.blur.blur = (1 - this.time) * 20
+      this.glow.blurFilter.blur = (1 - this.time) * 30
     }
   }
 }
