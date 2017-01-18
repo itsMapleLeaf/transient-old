@@ -17,6 +17,9 @@ export class Game {
 
   update(dt: number) {
     this.state.update(dt)
+  }
+
+  render() {
     this.state.render(this.renderer)
   }
 }

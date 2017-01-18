@@ -12,11 +12,11 @@ const renderer = pixi.autoDetectRenderer(viewWidth, viewHeight, {
 const game = new Game(renderer, new Gameplay())
 
 let time = 0
-let elapsed
 
 window.requestAnimationFrame(function frame(now) {
-  elapsed = (now - time) / 1000
+  const elapsed = (now - time) / 1000
   time = now
   game.update(elapsed)
+  game.render()
   window.requestAnimationFrame(frame)
 })
