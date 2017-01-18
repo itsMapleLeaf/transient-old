@@ -27,26 +27,6 @@ function getNotePosition({ position, time }: Note) {
   return new pixi.Point(x, y)
 }
 
-function createNoteHitAnimation({ x, y, time }: Animation) {
-  const sprite = new pixi.Container()
-  const body = createRect(0, 0, 50).fill()
-  const glow = createRect(0, 0, 50).fill()
-  const blur = new pixi.filters.BlurFilter(20)
-
-  sprite.addChild(body)
-  sprite.addChild(glow)
-
-  sprite.rotation = util.radians(45)
-  sprite.position.x = x
-  sprite.position.y = y + time ** 2 * 100
-  sprite.alpha = 1 - time ** 2
-
-  glow.filters = [blur]
-  blur.blur = (1 - time) * 20
-
-  return sprite
-}
-
 function getNoteOffset(songTime: number) {
   return songTime * noteSpacing + receptorPosition
 }
@@ -64,19 +44,6 @@ function refreshNoteSprites(container: pixi.Container, notes: Note[]) {
   notes.filter(isActive).forEach(addNote)
 }
 
-function refreshAnimations(container: pixi.Container, animations: Animation[]) {
-  container.removeChildren()
-  animations.forEach(anim => container.addChild(createNoteHitAnimation(anim)))
-}
-
-function updateAnimations(dt: number, container: pixi.Container, animations: Animation[]) {
-  animations.forEach(anim => anim.time += dt)
-}
-
-function keepActiveAnimations(animations: Animation[]) {
-  return animations.filter(anim => anim.time < 1)
-}
-
 enum NoteState { active, hit, missed, holding }
 
 class Note {
@@ -84,9 +51,32 @@ class Note {
   constructor(public time: number, public position: number) {}
 }
 
-class Animation {
+class NoteHitAnimation {
+  sprite = new pixi.Container()
+  body = createRect(0, 0, 50).fill()
+  glow = createRect(0, 0, 50).fill()
+  blur = new pixi.filters.BlurFilter(20)
   time = 0
-  constructor(public x: number, public y: number) {}
+
+  constructor(public x: number, public y: number) {
+    this.sprite.addChild(this.body)
+    this.sprite.addChild(this.glow)
+    this.sprite.rotation = util.radians(45)
+    this.glow.filters = [this.blur]
+  }
+
+  update(dt: number) {
+    this.time += dt / 0.4
+    this.sprite.position.x = this.x
+    this.sprite.position.y = this.y + this.time ** 2 * 100
+    this.sprite.alpha = 1 - this.time ** 2
+    this.blur.blur = (1 - this.time) * 20
+    return this.isActive()
+  }
+
+  isActive() {
+    return this.time < 1
+  }
 }
 
 export class Gameplay extends GameState {
@@ -98,7 +88,7 @@ export class Gameplay extends GameState {
     new Note(3 / 2, 3 / 4),
     new Note(4 / 2, 4 / 4),
   ]
-  animations = [] as Animation[]
+  animations = [] as NoteHitAnimation[]
 
   stage = new pixi.Container()
   noteSprites = new pixi.Container()
@@ -118,9 +108,9 @@ export class Gameplay extends GameState {
 
     this.noteSprites.y = getNoteOffset(this.songTime)
 
-    this.animations = keepActiveAnimations(this.animations)
-    updateAnimations(dt, this.animationSprites, this.animations)
-    refreshAnimations(this.animationSprites, this.animations)
+    this.animations = this.animations.filter(anim => anim.update(dt))
+    this.animationSprites.removeChildren()
+    this.animations.forEach(anim => this.animationSprites.addChild(anim.sprite))
   }
 
   render(renderer: pixi.WebGLRenderer | pixi.CanvasRenderer) {
@@ -144,8 +134,11 @@ export class Gameplay extends GameState {
 
     if (note) {
       note.state = NoteState.hit
-      this.animations.push(new Animation(getNotePosition(note).x, receptorPosition))
       refreshNoteSprites(this.noteSprites, this.notes)
+
+      const anim = new NoteHitAnimation(getNotePosition(note).x, receptorPosition)
+      this.animations.push(anim)
+      this.animationSprites.addChild(anim.sprite)
     }
   }
 }
