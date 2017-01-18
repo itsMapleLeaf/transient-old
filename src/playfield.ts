@@ -1,6 +1,5 @@
 import * as pixi from 'pixi.js'
-import {viewWidth, viewHeight} from './game'
-import {receptorPosition} from './gameplay'
+import {viewWidth, viewHeight, receptorPosition} from './constants'
 import {RectangleFillSprite} from './rect'
 import {Glow} from './pixi-utils'
 

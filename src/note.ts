@@ -1,12 +1,11 @@
 import * as pixi from 'pixi.js'
 
-import {viewWidth} from './game'
-import {trackMargin, noteSpacing} from './gameplay'
+import {viewWidth, trackMargin, noteSpacing} from './constants'
 import {RectangleFillSprite, RectangleLineSprite} from './rect'
 import {Glow} from './pixi-utils'
 import * as util from './util'
 
-export enum NoteState { active, hit, missed, holding }
+export const enum NoteState { active, hit, missed, holding }
 
 export class NoteData {
   constructor(public time: number, public position: number) {}

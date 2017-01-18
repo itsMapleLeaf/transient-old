@@ -13,14 +13,12 @@ function start()  {
 
   const game = new Game(renderer, new Gameplay())
 
-  let time = 0
-
-  window.requestAnimationFrame(function frame(now: number) {
+  window.requestAnimationFrame(function frame(now: number, time = 0) {
     const elapsed = (now - time) / 1000
     time = now
     game.update(elapsed)
     game.render()
-    window.requestAnimationFrame(frame)
+    window.requestAnimationFrame(now => frame(now, time))
   })
 }
 

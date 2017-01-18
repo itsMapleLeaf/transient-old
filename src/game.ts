@@ -1,8 +1,5 @@
 import * as pixi from 'pixi.js'
 
-export const viewWidth = 540
-export const viewHeight = 960
-
 export class Game {
   input = new pixi.interaction.InteractionManager(this.renderer)
 

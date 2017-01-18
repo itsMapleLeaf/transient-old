@@ -1,7 +1,7 @@
 import * as pixi from 'pixi.js'
 import * as util from './util'
 
-enum Judgement {
+export const enum Judgement {
   absolute,
   perfect,
   great,

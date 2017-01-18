@@ -1,14 +1,11 @@
 import * as pixi from 'pixi.js'
 
-import {GameState, viewWidth, viewHeight} from './game'
+import {GameState} from './game'
 import {Playfield} from './playfield'
 import {Note, NoteState, NoteHitAnimation} from './note'
 import {TypedContainer} from './pixi-utils'
 import {JudgementAnimation, getJudgement} from './judgement'
-
-export const noteSpacing = 300 // pixels per second
-export const trackMargin = 100
-export const receptorPosition = viewHeight * 0.88
+import {viewWidth, viewHeight, receptorPosition, noteSpacing} from './constants'
 
 export class Gameplay extends GameState {
   stage = new pixi.Container()
@@ -72,6 +69,7 @@ export class Gameplay extends GameState {
     if (note) {
       return note
     }
+    return null
   }
 
   addNoteHitAnimation(note: Note) {
