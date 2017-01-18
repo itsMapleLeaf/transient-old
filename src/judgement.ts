@@ -9,6 +9,13 @@ enum Judgement {
   none,
 }
 
+export const timingWindow = {
+  [Judgement.absolute]: 0.02,
+  [Judgement.perfect]: 0.08,
+  [Judgement.great]: 0.15,
+  [Judgement.bad]: 0.28,
+}
+
 const judgementText = {
   [Judgement.absolute]: 'ABSOLUTE',
   [Judgement.perfect]: 'PERFECT',
@@ -16,11 +23,11 @@ const judgementText = {
   [Judgement.bad]: 'BAD',
 }
 
-export const timingWindow = {
-  [Judgement.absolute]: 0.02,
-  [Judgement.perfect]: 0.08,
-  [Judgement.great]: 0.15,
-  [Judgement.bad]: 0.28,
+const judgementColors = {
+  [Judgement.absolute]: 0x3498db,
+  [Judgement.perfect]: 0xf1c40f,
+  [Judgement.great]: 0x2ecc71,
+  [Judgement.bad]: 0xe74c3c,
 }
 
 export function getJudgement(timing: number) {
@@ -37,7 +44,7 @@ export class JudgementAnimation extends pixi.Container {
     fill: 0xffffff,
     fontFamily: 'Teko',
     fontWeight: 'lighter',
-    fontSize: 120
+    fontSize: 108
   }))
 
   judgement = Judgement.none
@@ -50,10 +57,16 @@ export class JudgementAnimation extends pixi.Container {
 
   update(dt: number) {
     this.time += dt
+
+    if (this.judgement === Judgement.absolute) {
+      this.text.alpha = util.lerp(1, 0.6, Math.sin(this.time * 100))
+    }
+
+    this.text.style.fill = judgementColors[this.judgement]
     this.text.y = util.tween(20, 0, 0, 0.2, this.time)
     this.text.text = judgementText[this.judgement] || ''
     this.text.pivot.x = this.text.width / 2
-    this.alpha = util.tween(1, 0, 0.8, 1.0, this.time)
+    this.alpha = util.tween(1, 0, 1.5, 1.8, this.time)
   }
 
   play(judgement: Judgement) {
