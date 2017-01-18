@@ -1,36 +1,12 @@
 import * as pixi from 'pixi.js'
 
 import {GameState, viewWidth, viewHeight} from './game'
-import {createRect} from './shapes'
+import * as sprites from './sprites'
 import * as util from './util'
 
 export const noteSpacing = 300 // pixels per second
 export const trackMargin = 100
 export const receptorPosition = viewHeight * 0.88
-
-function createPlayfield() {
-  const sprite = new pixi.Container()
-  const blur = new pixi.filters.BlurFilter(50, 20)
-
-  const shade = createRect(viewWidth / 2, viewHeight / 2, viewWidth - trackMargin, viewHeight).fill(0, 0.3)
-  const receptor = createRect(viewWidth / 2, receptorPosition, viewWidth - trackMargin, 2).fill(0xffffff, 0.5)
-  const left = createRect(trackMargin / 2, viewHeight / 2, 2, viewHeight).fill(0xffffff, 0.5)
-  const right = createRect(viewWidth - trackMargin / 2, viewHeight / 2, 2, viewHeight).fill(0xffffff, 0.5)
-  const glow = createRect(viewWidth / 2, receptorPosition, viewWidth - trackMargin, 50).fill(0xffffff, 0.2)
-
-  sprite.addChild(shade)
-
-  sprite.addChild(receptor)
-  sprite.addChild(left)
-  sprite.addChild(right)
-  sprite.addChild(glow)
-
-  glow.filters = [blur]
-
-  blur.blurX = 0
-
-  return sprite
-}
 
 function getNoteOffset(songTime: number) {
   return songTime * noteSpacing + receptorPosition
@@ -38,14 +14,16 @@ function getNoteOffset(songTime: number) {
 
 enum NoteState { active, hit, missed, holding }
 
+interface Animation {
+  update(dt: number): boolean
+  render<T extends pixi.DisplayObject>(): T
+}
+
 class Note {
   state = NoteState.active
-  sprite = new pixi.Container()
+  sprite = sprites.createNote()
 
   constructor(public time: number, public position: number) {
-    this.sprite.addChild(createRect(0, 0, 40).fill())
-    this.sprite.addChild(createRect(0, 0, 50).stroke(2))
-    this.sprite.rotation = util.radians(45)
     this.sprite.position = this.getScreenPosition()
   }
 
@@ -60,23 +38,14 @@ class Note {
   }
 }
 
-interface Animation {
-  update(dt: number): boolean
-  render<T extends pixi.DisplayObject>(): T
-}
-
 class NoteHitAnimation implements Animation {
-  sprite = new pixi.Container()
-  body = createRect(0, 0, 50).fill()
-  glow = createRect(0, 0, 50).fill()
+  sprite = sprites.createNoteHit()
   blur = new pixi.filters.BlurFilter(20)
   time = 0
 
   constructor(public x: number, public y: number) {
-    this.sprite.addChild(this.body)
-    this.sprite.addChild(this.glow)
-    this.sprite.rotation = util.radians(45)
-    this.glow.filters = [this.blur]
+    const glow = this.sprite.addChild(sprites.createRect(0, 0, 50).fill())
+    glow.filters = [this.blur]
   }
 
   update(dt: number) {
@@ -158,7 +127,7 @@ class NoteLayer {
 
 export class Gameplay extends GameState {
   stage = new pixi.Container()
-  playfield = createPlayfield()
+  playfield = sprites.createPlayfield()
   noteLayer = new NoteLayer()
   animationLayer = new AnimationLayer()
 

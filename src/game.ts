@@ -2,9 +2,6 @@ import * as pixi from 'pixi.js'
 
 export const viewWidth = 540
 export const viewHeight = 960
-export const noteSpacing = 300 // pixels per second
-export const trackMargin = 80
-export const receptorPosition = viewHeight * 0.82
 
 export class Game {
   input = new pixi.interaction.InteractionManager(this.renderer)
