@@ -1,7 +1,7 @@
 import * as pixi from 'pixi.js'
 
 import {viewWidth, trackMargin, noteSpacing} from './constants'
-import {RectangleFillSprite, RectangleLineSprite} from './rect'
+import {RectangleSprite} from './rect'
 import {Glow} from './pixi-utils'
 import * as util from './util'
 
@@ -24,8 +24,8 @@ export class Note extends pixi.Container {
 
   constructor(time: number, position: number) {
     super()
-    this.addChild(new RectangleFillSprite(0, 0, 40))
-    this.addChild(new RectangleLineSprite(0, 0, 50))
+    this.addChild(new RectangleSprite('fill', 0, 0, 40))
+    this.addChild(new RectangleSprite('line', 0, 0, 50))
     this.data = new NoteData(time, position)
     this.position = this.data.getScreenPosition()
     this.rotation = util.radians(45)
@@ -40,7 +40,7 @@ export class Note extends pixi.Container {
 }
 
 export class NoteHitAnimation extends pixi.Container {
-  body = this.addChild(new RectangleFillSprite(0, 0, 50))
+  body = this.addChild(new RectangleSprite('fill', 0, 0, 50))
   glow = this.addChild(new Glow(this.body, 20))
   time = 0
 
