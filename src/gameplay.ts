@@ -54,9 +54,18 @@ class Note {
     const y = util.lerp(0, noteSpacing, this.time) * -1
     return new pixi.Point(x, y)
   }
+
+  render() {
+    return this.sprite
+  }
 }
 
-class NoteHitAnimation {
+interface Animation {
+  update(dt: number): boolean
+  render<T extends pixi.DisplayObject>(): T
+}
+
+class NoteHitAnimation implements Animation {
   sprite = new pixi.Container()
   body = createRect(0, 0, 50).fill()
   glow = createRect(0, 0, 50).fill()
@@ -79,39 +88,58 @@ class NoteHitAnimation {
     return this.isActive()
   }
 
+  render() {
+    return this.sprite
+  }
+
   isActive() {
     return this.time < 1
   }
 }
 
-export class Gameplay extends GameState {
-  songTime = -2
-  animations = [] as NoteHitAnimation[]
+class AnimationLayer {
+  animations = [] as Animation[]
+  sprite = new pixi.Container()
 
-  notes = [
-    new Note(0 / 2, 0 / 4),
-    new Note(1 / 2, 1 / 4),
-    new Note(2 / 2, 2 / 4),
-    new Note(3 / 2, 3 / 4),
-    new Note(4 / 2, 4 / 4),
-  ]
-
-  stage = new pixi.Container()
-  playfield = this.stage.addChild(createPlayfield())
-  noteLayer = this.stage.addChild(new pixi.Container())
-  animationLayer = this.stage.addChild(new pixi.Container())
+  add(anim: Animation) {
+    this.animations.push(anim)
+  }
 
   update(dt: number) {
-    this.songTime += dt
     this.animations = this.animations.filter(anim => anim.update(dt))
   }
 
-  pointerdown(event: pixi.interaction.InteractionEvent) {
+  render() {
+    this.sprite.removeChildren()
+    this.animations.forEach(anim => this.sprite.addChild(anim.render()))
+    return this.sprite
+  }
+}
+
+class NoteLayer {
+  sprite = new pixi.Container()
+  notes = [] as Note[]
+
+  add(note: Note) {
+    this.notes.push(note)
+  }
+
+  render() {
+    this.sprite.removeChildren()
+    this.notes.forEach(note => this.sprite.addChild(note.render()))
+    return this.sprite
+  }
+
+  updateNotePosition(songTime: number) {
+    this.sprite.position.y = getNoteOffset(songTime)
+  }
+
+  findTappedNote(event: pixi.interaction.InteractionEvent, songTime: number) {
     const isActive = (note: Note) =>
       note.state === NoteState.active
 
     const checkTiming = (note: Note) =>
-      Math.abs(note.time - this.songTime) < 0.2
+      Math.abs(note.time - songTime) < 0.2
 
     const checkTapPosition = (note: Note) =>
       Math.abs(event.data.global.x - note.getScreenPosition().x) < 80
@@ -123,19 +151,50 @@ export class Gameplay extends GameState {
       .filter(checkTapPosition)[0]
 
     if (note) {
+      return note
+    }
+  }
+}
+
+export class Gameplay extends GameState {
+  stage = new pixi.Container()
+  playfield = createPlayfield()
+  noteLayer = new NoteLayer()
+  animationLayer = new AnimationLayer()
+
+  songTime = -2
+
+  constructor() {
+    super()
+
+    this.noteLayer.add(new Note(0 / 2, 0 / 4))
+    this.noteLayer.add(new Note(1 / 2, 1 / 4))
+    this.noteLayer.add(new Note(2 / 2, 2 / 4))
+    this.noteLayer.add(new Note(3 / 2, 3 / 4))
+    this.noteLayer.add(new Note(4 / 2, 4 / 4))
+
+    this.stage.addChild(this.playfield)
+    this.stage.addChild(this.noteLayer.render())
+    this.stage.addChild(this.animationLayer.render())
+  }
+
+  update(dt: number) {
+    this.songTime += dt
+    this.animationLayer.update(dt)
+    this.noteLayer.updateNotePosition(this.songTime)
+  }
+
+  pointerdown(event: pixi.interaction.InteractionEvent) {
+    const note = this.noteLayer.findTappedNote(event, this.songTime)
+    if (note) {
       note.state = NoteState.hit
-      this.animations.push(new NoteHitAnimation(note.getScreenPosition().x, receptorPosition))
+      this.animationLayer.add(new NoteHitAnimation(note.getScreenPosition().x, receptorPosition))
     }
   }
 
   render(renderer: pixi.WebGLRenderer | pixi.CanvasRenderer) {
-    this.noteLayer.removeChildren()
-    this.notes.forEach(note => note.state === NoteState.active && this.noteLayer.addChild(note.sprite))
-    this.noteLayer.position.y = getNoteOffset(this.songTime)
-
-    this.animationLayer.removeChildren()
-    this.animations.forEach(anim => this.animationLayer.addChild(anim.sprite))
-
+    this.noteLayer.render()
+    this.animationLayer.render()
     renderer.render(this.stage)
   }
 }
