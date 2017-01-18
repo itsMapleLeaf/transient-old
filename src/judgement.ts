@@ -32,7 +32,7 @@ const judgementColors = {
 
 export function getJudgement(timing: number) {
   for (let i = 0; i < Judgement.none; i++) {
-    if (Math.abs(timing) < timingWindow[i]) {
+    if (timingWindow[i] != null && Math.abs(timing) < timingWindow[i]) {
       return i as Judgement
     }
   }
