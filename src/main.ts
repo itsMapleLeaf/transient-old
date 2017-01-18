@@ -13,7 +13,7 @@ const game = new Game(renderer, new Gameplay())
 
 let time = 0
 
-window.requestAnimationFrame(function frame(now) {
+window.requestAnimationFrame(function frame(now: number) {
   const elapsed = (now - time) / 1000
   time = now
   game.update(elapsed)
