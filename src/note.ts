@@ -45,9 +45,12 @@ export class NoteHitAnimation extends pixi.Container {
   glow = this.addChild(new Glow(this.body, 20))
   time = 0
 
-  constructor(public startX: number, public startY: number) {
+  origin: pixi.Point
+
+  constructor(x: number, y: number) {
     super()
-    this.position.set(startX, startY)
+    this.origin = new pixi.Point(x, y)
+    this.position = this.origin
     this.rotation = util.radians(45)
   }
 
@@ -56,10 +59,9 @@ export class NoteHitAnimation extends pixi.Container {
     if (this.time >= 1) {
       this.destroy()
     } else {
-      this.position.x = this.startX
-      this.position.y = this.startY + this.time ** 2 * 100
-      this.alpha = 1 - this.time ** 2
-      this.glow.blurFilter.blur = (1 - this.time) * 30
+      this.position.y = this.origin.y + util.tween(0, 100, 0, 0.8, this.time, t => t ** 2.5)
+      this.alpha = util.tween(1, 0, 0, 0.8, this.time, util.easeQuadIn)
+      this.glow.blurFilter.blur = util.tween(30, 10, 0, 0.4, this.time)
     }
   }
 }

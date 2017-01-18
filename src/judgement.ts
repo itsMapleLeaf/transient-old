@@ -48,10 +48,10 @@ export class JudgementAnimation extends pixi.Container {
 
   update(dt: number) {
     this.time += dt
-    this.text.y = util.lerp(20, 0, util.clamp((this.time / 0.25) ** 0.5, 0, 1))
+    this.text.y = util.tween(20, 0, 0, 0.2, this.time)
     this.text.text = judgementText[this.judgement] || ''
     this.text.pivot.x = this.text.width / 2
-    this.alpha = util.lerp(1, 0, util.clamp(util.delta(this.time, 0.8, 1.0), 0, 1))
+    this.alpha = util.tween(1, 0, 0.8, 1.0, this.time)
   }
 
   play(judgement: Judgement) {
