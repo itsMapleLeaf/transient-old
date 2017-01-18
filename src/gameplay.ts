@@ -1,19 +1,69 @@
 import * as pixi from 'pixi.js'
 
-import {GameState, viewHeight} from './game'
+import {GameState, viewWidth, viewHeight} from './game'
 import {Playfield} from './playfield'
 import {Note, NoteState, NoteHitAnimation} from './note'
 import {TypedContainer} from './pixi-utils'
+import * as util from './util'
 
 export const noteSpacing = 300 // pixels per second
 export const trackMargin = 100
 export const receptorPosition = viewHeight * 0.88
+
+const windowAbsolute = 0.02
+const windowPerfect = 0.08
+const windowGreat = 0.15
+const windowBad = 0.28
+
+enum Judgement {
+  absolute,
+  perfect,
+  great,
+  bad,
+  none,
+}
+
+const judgementText = {
+  [Judgement.absolute]: 'ABSOLUTE',
+  [Judgement.perfect]: 'PERFECT',
+  [Judgement.great]: 'GREAT',
+  [Judgement.bad]: 'BAD',
+}
+
+class JudgementAnimation extends pixi.Container {
+  text = this.addChild(new pixi.Text('ABSOLUTE', {
+    fill: 0xffffff,
+    fontSize: 80
+  }))
+
+  judgement = Judgement.none
+  time = 0
+
+  constructor(x: number, y: number) {
+    super()
+    this.position.set(x, y)
+  }
+
+  update(dt: number) {
+    this.time += dt
+    this.text.y = util.lerp(20, 0, util.clamp((this.time / 0.25) ** 0.5, 0, 1))
+    this.text.text = judgementText[this.judgement] || ''
+    this.text.pivot.x = this.text.width / 2
+    this.alpha = util.lerp(1, 0, util.clamp(util.delta(this.time, 0.8, 1.0), 0, 1))
+  }
+
+  play(judgement: Judgement) {
+    this.time = 0
+    this.judgement = judgement
+  }
+}
 
 export class Gameplay extends GameState {
   stage = new pixi.Container()
   playfield = new Playfield()
   notes = new TypedContainer<Note>()
   animations = new TypedContainer<NoteHitAnimation>()
+  judgement = new JudgementAnimation(viewWidth / 2, viewHeight * 0.25)
   songTime = -2
 
   constructor() {
@@ -28,6 +78,7 @@ export class Gameplay extends GameState {
     this.stage.addChild(this.playfield)
     this.stage.addChild(this.notes)
     this.stage.addChild(this.animations)
+    this.stage.addChild(this.judgement)
   }
 
   update(dt: number) {
@@ -38,14 +89,15 @@ export class Gameplay extends GameState {
     for (const anim of this.animations.children) {
       anim.update(dt)
     }
+    this.judgement.update(dt)
   }
 
   pointerdown(event: pixi.interaction.InteractionEvent) {
     const note = this.findTappedNote(event.data.global)
     if (note instanceof Note) {
       note.setState(NoteState.hit)
-      const anim = new NoteHitAnimation(note.data.getScreenPosition().x, receptorPosition)
-      this.animations.addChild(anim)
+      this.addNoteHitAnimation(note)
+      this.judgement.play(this.getJudgement(this.songTime - note.data.time))
     }
   }
 
@@ -68,6 +120,25 @@ export class Gameplay extends GameState {
     if (note) {
       return note
     }
+  }
+
+  addNoteHitAnimation(note: Note) {
+    const pos = note.data.getScreenPosition()
+    const anim = new NoteHitAnimation(pos.x, receptorPosition)
+    this.animations.addChild(anim)
+  }
+
+  getJudgement(timing: number) {
+    if (Math.abs(timing) < windowAbsolute) {
+      return Judgement.absolute
+    } else if (Math.abs(timing) < windowPerfect) {
+      return Judgement.perfect
+    } else if (Math.abs(timing) < windowGreat) {
+      return Judgement.great
+    } else if (Math.abs(timing) < windowBad) {
+      return Judgement.bad
+    }
+    return Judgement.none
   }
 
   render(renderer: pixi.WebGLRenderer | pixi.CanvasRenderer) {
