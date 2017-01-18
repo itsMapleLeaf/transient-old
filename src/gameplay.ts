@@ -32,18 +32,14 @@ export class Gameplay extends GameState {
 
   update(dt: number) {
     this.songTime += dt
-    for (const note of this.notes.children) {
-      note.y = note.data.getScreenPosition().y + receptorPosition + this.songTime * noteSpacing
-    }
-    for (const anim of this.animations.children) {
-      anim.update(dt)
-    }
+    for (const anim of this.animations.children) anim.update(dt)
+    this.notes.y = this.songTime * noteSpacing + receptorPosition
     this.judgement.update(dt)
   }
 
   pointerdown(event: pixi.interaction.InteractionEvent) {
     const note = this.findTappedNote(event.data.global)
-    if (note instanceof Note) {
+    if (note) {
       note.setState(NoteState.hit)
       this.addNoteHitAnimation(note)
       this.judgement.play(getJudgement(this.songTime - note.data.time))
@@ -73,8 +69,7 @@ export class Gameplay extends GameState {
   }
 
   addNoteHitAnimation(note: Note) {
-    const pos = note.data.getScreenPosition()
-    const anim = new NoteHitAnimation(pos.x, receptorPosition)
+    const anim = new NoteHitAnimation(note.x, receptorPosition)
     this.animations.addChild(anim)
   }
 
