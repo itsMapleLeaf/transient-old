@@ -35,7 +35,9 @@ export function getJudgement(timing: number) {
 export class JudgementAnimation extends pixi.Container {
   text = this.addChild(new pixi.Text('ABSOLUTE', {
     fill: 0xffffff,
-    fontSize: 80
+    fontFamily: 'Teko',
+    fontWeight: 'lighter',
+    fontSize: 120
   }))
 
   judgement = Judgement.none
