@@ -96,6 +96,7 @@ export class Gameplay extends GameState {
     const checkTapPosition = (note: Note) =>
       Math.abs(event.data.global.x - note.getScreenPosition().x) < 80
 
+    // TODO: fix later if this causes performance problems
     const note = this.notes
       .filter(isActive)
       .filter(checkTiming)
