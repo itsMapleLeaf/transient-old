@@ -1,7 +1,9 @@
-import {Game, viewWidth, viewHeight} from './game'
-import {Gameplay} from './gameplay'
 import * as pixi from 'pixi.js'
 import * as WebFontLoader from 'webfontloader'
+
+import {Game} from './game'
+import {Gameplay} from './gameplay'
+import {viewWidth, viewHeight} from './constants'
 
 function start()  {
   const canvas = document.querySelector('canvas') as HTMLCanvasElement
