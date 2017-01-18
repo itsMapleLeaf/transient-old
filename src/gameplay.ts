@@ -1,120 +1,146 @@
 import * as pixi from 'pixi.js'
 
 import {GameState, viewWidth, viewHeight} from './game'
-import * as sprites from './sprites'
+import {RectangleFillSprite, RectangleLineSprite} from './sprites'
 import * as util from './util'
 
 export const noteSpacing = 300 // pixels per second
 export const trackMargin = 100
 export const receptorPosition = viewHeight * 0.88
 
-function getNoteOffset(songTime: number) {
-  return songTime * noteSpacing + receptorPosition
-}
-
 enum NoteState { active, hit, missed, holding }
 
-interface Animation {
-  update(dt: number): boolean
-  render<T extends pixi.DisplayObject>(): T
+class PlayfieldSprite extends pixi.Container {
+  constructor() {
+    super()
+
+    const shade = new RectangleFillSprite(viewWidth / 2, viewHeight / 2, viewWidth - trackMargin, viewHeight, 0, 0.3)
+    const receptor = new RectangleFillSprite(viewWidth / 2, receptorPosition, viewWidth - trackMargin, 2, undefined, 0.5)
+    const left = new RectangleFillSprite(trackMargin / 2, viewHeight / 2, 2, viewHeight)
+    const right = new RectangleFillSprite(viewWidth - trackMargin / 2, viewHeight / 2, 2, viewHeight)
+    const glow = new RectangleFillSprite(viewWidth / 2, receptorPosition, viewWidth - trackMargin, 20)
+
+    this.addChild(shade)
+    this.addChild(receptor)
+    this.addChild(left)
+    this.addChild(right)
+    this.addChild(glow)
+
+    const blur = new pixi.filters.BlurFilter(50, 20)
+    glow.filters = [blur]
+    blur.blurX = 0
+  }
 }
 
-class Note {
-  state = NoteState.active
-  sprite = sprites.createNote()
-
-  constructor(public time: number, public position: number) {
-    this.sprite.position = this.getScreenPosition()
-  }
+class NoteData {
+  constructor(public time: number, public position: number) {}
 
   getScreenPosition() {
     const x = util.lerp(trackMargin, viewWidth - trackMargin, this.position)
-    const y = util.lerp(0, noteSpacing, this.time) * -1
+    const y = util.lerp(0, -noteSpacing, this.time)
     return new pixi.Point(x, y)
-  }
-
-  render() {
-    return this.sprite
   }
 }
 
-class NoteHitAnimation implements Animation {
-  sprite = sprites.createNoteHit()
-  blur = new pixi.filters.BlurFilter(20)
-  time = 0
+class NoteSprite extends pixi.Container {
+  state = NoteState.active
 
-  constructor(public x: number, public y: number) {
-    const glow = this.sprite.addChild(sprites.createRect(0, 0, 50).fill())
-    glow.filters = [this.blur]
+  data: NoteData
+
+  constructor(time: number, position: number) {
+    super()
+    this.addChild(new RectangleFillSprite(0, 0, 40))
+    this.addChild(new RectangleLineSprite(0, 0, 50))
+    this.data = new NoteData(time, position)
+    this.position = this.data.getScreenPosition()
+    this.rotation = util.radians(45)
+  }
+
+  setState(state: NoteState) {
+    if (state === NoteState.hit) {
+      this.alpha = 0
+    }
+    this.state = state
+  }
+}
+
+class NoteHitSprite extends pixi.Container {
+  time = 0
+  blur = new pixi.filters.BlurFilter()
+
+  constructor(public startX: number, public startY: number) {
+    super()
+    this.addChild(new RectangleFillSprite(0, 0, 50))
+    this.addChild(new RectangleFillSprite(0, 0, 50)).filters = [this.blur]
+    this.position.set(startX, startY)
+    this.rotation = util.radians(45)
   }
 
   update(dt: number) {
     this.time += dt / 0.4
-    this.sprite.position.x = this.x
-    this.sprite.position.y = this.y + this.time ** 2 * 100
-    this.sprite.alpha = 1 - this.time ** 2
-    this.blur.blur = (1 - this.time) * 20
-    return this.isActive()
-  }
-
-  render() {
-    return this.sprite
-  }
-
-  isActive() {
-    return this.time < 1
+    if (this.time >= 1) {
+      this.destroy()
+    } else {
+      this.position.x = this.startX
+      this.position.y = this.startY + this.time ** 2 * 100
+      this.alpha = 1 - this.time ** 2
+      this.blur.blur = (1 - this.time) * 20
+    }
   }
 }
 
-class AnimationLayer {
-  animations = [] as Animation[]
-  sprite = new pixi.Container()
+export class Gameplay extends GameState {
+  stage = new pixi.Container()
+  playfield = new PlayfieldSprite()
+  notes = new pixi.Container()
+  animations = new pixi.Container()
+  songTime = -2
 
-  add(anim: Animation) {
-    this.animations.push(anim)
+  constructor() {
+    super()
+
+    this.notes.addChild(new NoteSprite(0 / 2, 0 / 4))
+    this.notes.addChild(new NoteSprite(1 / 2, 1 / 4))
+    this.notes.addChild(new NoteSprite(2 / 2, 2 / 4))
+    this.notes.addChild(new NoteSprite(3 / 2, 3 / 4))
+    this.notes.addChild(new NoteSprite(4 / 2, 4 / 4))
+
+    this.stage.addChild(this.playfield)
+    this.stage.addChild(this.notes)
+    this.stage.addChild(this.animations)
   }
 
   update(dt: number) {
-    this.animations = this.animations.filter(anim => anim.update(dt))
+    this.songTime += dt
+    for (const note of this.notes.children as NoteSprite[]) {
+      note.y = note.data.getScreenPosition().y + receptorPosition + this.songTime * noteSpacing
+    }
+    for (const anim of this.animations.children as NoteHitSprite[]) {
+      anim.update(dt)
+    }
   }
 
-  render() {
-    this.sprite.removeChildren()
-    this.animations.forEach(anim => this.sprite.addChild(anim.render()))
-    return this.sprite
-  }
-}
-
-class NoteLayer {
-  sprite = new pixi.Container()
-  notes = [] as Note[]
-
-  add(note: Note) {
-    this.notes.push(note)
+  pointerdown(event: pixi.interaction.InteractionEvent) {
+    const note = this.findTappedNote(event.data.global)
+    if (note instanceof NoteSprite) {
+      note.setState(NoteState.hit)
+      const anim = new NoteHitSprite(note.data.getScreenPosition().x, receptorPosition)
+      this.animations.addChild(anim)
+    }
   }
 
-  render() {
-    this.sprite.removeChildren()
-    this.notes.forEach(note => this.sprite.addChild(note.render()))
-    return this.sprite
-  }
-
-  updateNotePosition(songTime: number) {
-    this.sprite.position.y = getNoteOffset(songTime)
-  }
-
-  findTappedNote(event: pixi.interaction.InteractionEvent, songTime: number) {
-    const isActive = (note: Note) =>
+  findTappedNote(tap: pixi.Point) {
+    const isActive = (note: NoteSprite) =>
       note.state === NoteState.active
 
-    const checkTiming = (note: Note) =>
-      Math.abs(note.time - songTime) < 0.2
+    const checkTiming = (note: NoteSprite) =>
+      Math.abs(note.data.time - this.songTime) < 0.2
 
-    const checkTapPosition = (note: Note) =>
-      Math.abs(event.data.global.x - note.getScreenPosition().x) < 80
+    const checkTapPosition = (note: NoteSprite) =>
+      Math.abs(tap.x - note.x) < 80
 
     // TODO: fix later if this causes performance problems
-    const note = this.notes
+    const note = this.notes.children
       .filter(isActive)
       .filter(checkTiming)
       .filter(checkTapPosition)[0]
@@ -123,47 +149,8 @@ class NoteLayer {
       return note
     }
   }
-}
-
-export class Gameplay extends GameState {
-  stage = new pixi.Container()
-  playfield = sprites.createPlayfield()
-  noteLayer = new NoteLayer()
-  animationLayer = new AnimationLayer()
-
-  songTime = -2
-
-  constructor() {
-    super()
-
-    this.noteLayer.add(new Note(0 / 2, 0 / 4))
-    this.noteLayer.add(new Note(1 / 2, 1 / 4))
-    this.noteLayer.add(new Note(2 / 2, 2 / 4))
-    this.noteLayer.add(new Note(3 / 2, 3 / 4))
-    this.noteLayer.add(new Note(4 / 2, 4 / 4))
-
-    this.stage.addChild(this.playfield)
-    this.stage.addChild(this.noteLayer.render())
-    this.stage.addChild(this.animationLayer.render())
-  }
-
-  update(dt: number) {
-    this.songTime += dt
-    this.animationLayer.update(dt)
-    this.noteLayer.updateNotePosition(this.songTime)
-  }
-
-  pointerdown(event: pixi.interaction.InteractionEvent) {
-    const note = this.noteLayer.findTappedNote(event, this.songTime)
-    if (note) {
-      note.state = NoteState.hit
-      this.animationLayer.add(new NoteHitAnimation(note.getScreenPosition().x, receptorPosition))
-    }
-  }
 
   render(renderer: pixi.WebGLRenderer | pixi.CanvasRenderer) {
-    this.noteLayer.render()
-    this.animationLayer.render()
     renderer.render(this.stage)
   }
 }
