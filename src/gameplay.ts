@@ -10,7 +10,7 @@ export const receptorPosition = viewHeight * 0.88
 
 enum NoteState { active, hit, missed, holding }
 
-class PlayfieldSprite extends pixi.Container {
+class Playfield extends pixi.Container {
   constructor() {
     super()
 
@@ -42,7 +42,7 @@ class NoteData {
   }
 }
 
-class NoteSprite extends pixi.Container {
+class Note extends pixi.Container {
   state = NoteState.active
 
   data: NoteData
@@ -64,7 +64,7 @@ class NoteSprite extends pixi.Container {
   }
 }
 
-class NoteHitSprite extends pixi.Container {
+class NoteHitAnimation extends pixi.Container {
   time = 0
   blur = new pixi.filters.BlurFilter()
 
@@ -91,7 +91,7 @@ class NoteHitSprite extends pixi.Container {
 
 export class Gameplay extends GameState {
   stage = new pixi.Container()
-  playfield = new PlayfieldSprite()
+  playfield = new Playfield()
   notes = new pixi.Container()
   animations = new pixi.Container()
   songTime = -2
@@ -99,11 +99,11 @@ export class Gameplay extends GameState {
   constructor() {
     super()
 
-    this.notes.addChild(new NoteSprite(0 / 2, 0 / 4))
-    this.notes.addChild(new NoteSprite(1 / 2, 1 / 4))
-    this.notes.addChild(new NoteSprite(2 / 2, 2 / 4))
-    this.notes.addChild(new NoteSprite(3 / 2, 3 / 4))
-    this.notes.addChild(new NoteSprite(4 / 2, 4 / 4))
+    this.notes.addChild(new Note(0 / 2, 0 / 4))
+    this.notes.addChild(new Note(1 / 2, 1 / 4))
+    this.notes.addChild(new Note(2 / 2, 2 / 4))
+    this.notes.addChild(new Note(3 / 2, 3 / 4))
+    this.notes.addChild(new Note(4 / 2, 4 / 4))
 
     this.stage.addChild(this.playfield)
     this.stage.addChild(this.notes)
@@ -112,31 +112,31 @@ export class Gameplay extends GameState {
 
   update(dt: number) {
     this.songTime += dt
-    for (const note of this.notes.children as NoteSprite[]) {
+    for (const note of this.notes.children as Note[]) {
       note.y = note.data.getScreenPosition().y + receptorPosition + this.songTime * noteSpacing
     }
-    for (const anim of this.animations.children as NoteHitSprite[]) {
+    for (const anim of this.animations.children as NoteHitAnimation[]) {
       anim.update(dt)
     }
   }
 
   pointerdown(event: pixi.interaction.InteractionEvent) {
     const note = this.findTappedNote(event.data.global)
-    if (note instanceof NoteSprite) {
+    if (note instanceof Note) {
       note.setState(NoteState.hit)
-      const anim = new NoteHitSprite(note.data.getScreenPosition().x, receptorPosition)
+      const anim = new NoteHitAnimation(note.data.getScreenPosition().x, receptorPosition)
       this.animations.addChild(anim)
     }
   }
 
   findTappedNote(tap: pixi.Point) {
-    const isActive = (note: NoteSprite) =>
+    const isActive = (note: Note) =>
       note.state === NoteState.active
 
-    const checkTiming = (note: NoteSprite) =>
+    const checkTiming = (note: Note) =>
       Math.abs(note.data.time - this.songTime) < 0.2
 
-    const checkTapPosition = (note: NoteSprite) =>
+    const checkTapPosition = (note: Note) =>
       Math.abs(tap.x - note.x) < 80
 
     // TODO: fix later if this causes performance problems
