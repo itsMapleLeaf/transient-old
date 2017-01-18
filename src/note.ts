@@ -64,3 +64,26 @@ export class NoteHitAnimation extends pixi.Container {
     }
   }
 }
+
+export class NoteApproachAnimation extends pixi.Container {
+  body = this.addChild(new RectangleSprite('line', 0, 0, 50))
+
+  constructor(x: number, y: number, public note: Note) {
+    super()
+    this.position.set(x, y)
+    this.rotation = util.radians(45)
+  }
+
+  update(dt: number) {
+    const notePos = this.note.getGlobalPosition()
+    if (this.note.state === NoteState.active && notePos.y < this.y) {
+      const dist = Math.abs(notePos.y - this.y)
+      const time = 1 - util.clamp(dist / 500, 0, 1)
+      const scale = util.lerp(3, 1, time)
+      this.body.scale.set(scale, scale)
+      this.alpha = util.tween(0, 0.5, 0, 1, time, util.easeLinear)
+    } else {
+      this.alpha = 0
+    }
+  }
+}

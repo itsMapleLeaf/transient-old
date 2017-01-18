@@ -2,7 +2,7 @@ import * as pixi from 'pixi.js'
 
 import {GameState} from './game'
 import {Playfield} from './playfield'
-import {Note, NoteState, NoteHitAnimation} from './note'
+import {Note, NoteState, NoteHitAnimation, NoteApproachAnimation} from './note'
 import {TypedContainer} from './pixi-utils'
 import {JudgementAnimation, getJudgement} from './judgement'
 import {viewWidth, viewHeight, receptorPosition, noteSpacing} from './constants'
@@ -11,18 +11,25 @@ export class Gameplay extends GameState {
   stage = new pixi.Container()
   playfield = new Playfield()
   notes = new TypedContainer<Note>()
-  animations = new TypedContainer<NoteHitAnimation>()
+  animations = new TypedContainer<NoteHitAnimation | NoteApproachAnimation>()
   judgement = new JudgementAnimation(viewWidth / 2, viewHeight * 0.25)
   songTime = -2
 
   constructor() {
     super()
 
-    this.notes.addChild(new Note(0 / 2, 0 / 4))
-    this.notes.addChild(new Note(1 / 2, 1 / 4))
-    this.notes.addChild(new Note(2 / 2, 2 / 4))
-    this.notes.addChild(new Note(3 / 2, 3 / 4))
-    this.notes.addChild(new Note(4 / 2, 4 / 4))
+    const notes = [
+      new Note(0 / 2, 0 / 4),
+      new Note(1 / 2, 1 / 4),
+      new Note(2 / 2, 2 / 4),
+      new Note(3 / 2, 3 / 4),
+      new Note(4 / 2, 4 / 4),
+    ]
+
+    for (const note of notes) {
+      this.notes.addChild(note)
+      this.animations.addChild(new NoteApproachAnimation(note.x, receptorPosition, note))
+    }
 
     this.stage.addChild(this.playfield)
     this.stage.addChild(this.notes)
