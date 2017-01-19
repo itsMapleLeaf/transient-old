@@ -78,7 +78,7 @@ export class NoteReceptor extends pixi.Container {
     const notePos = this.note.getGlobalPosition()
     if (this.note.state === NoteState.active && notePos.y < this.y) {
       const delta = util.delta(notePos.y, this.y, this.y - noteSpacing)
-      this.alpha = util.lerp(0, 1, util.clamp(delta, 0, 1))
+      this.alpha = util.lerp(1, 0, util.clamp(delta, 0, 1))
     } else {
       this.alpha = 0
     }
