@@ -1,10 +1,10 @@
 import * as pixi from 'pixi.js'
 
 import {GameState} from './game'
-import {Playfield} from './playfield'
-import {Note, NoteState, NoteHitAnimation, NoteReceptor} from './note'
-import {TypedContainer} from './pixi-utils'
 import {JudgementAnimation, getJudgement} from './judgement'
+import {Note, NoteState, NoteHitAnimation, NoteReceptor} from './note'
+import {Playfield} from './playfield'
+import {TypedContainer} from './pixi-utils'
 import * as constants from './constants'
 
 class NoteContainer extends TypedContainer<Note> {
