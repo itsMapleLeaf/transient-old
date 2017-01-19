@@ -1,7 +1,7 @@
 import * as pixi from 'pixi.js'
 
 import {GameState} from './game'
-import {JudgementAnimation, getJudgement} from './judgement'
+import {Judgement, JudgementAnimation, getJudgement} from './judgement'
 import {Note, NoteState, NoteHitAnimation, NoteReceptor} from './note'
 import {Playfield} from './playfield'
 import {TypedContainer} from './pixi-utils'
@@ -23,8 +23,8 @@ export class Gameplay extends GameState {
   notes = new NoteContainer()
   noteReceptors = new TypedContainer<NoteReceptor>()
   noteHitAnimations = new TypedContainer<NoteHitAnimation>()
-  judgement = new JudgementAnimation(constants.viewWidth / 2, constants.viewHeight * 0.25)
-  songTime = -2
+  judgement = new JudgementAnimation(constants.viewWidth / 2, constants.judgementPosition)
+  songTime = -constants.songStartDelay
 
   constructor() {
     super()
@@ -72,10 +72,10 @@ export class Gameplay extends GameState {
       note.state === NoteState.active
 
     const checkTiming = (note: Note) =>
-      Math.abs(note.data.time - this.songTime) < 0.2
+      getJudgement(note.data.time - this.songTime) !== Judgement.none
 
     const checkTapPosition = (note: Note) =>
-      Math.abs(tap.x - note.x) < 80
+      Math.abs(tap.x - note.x) < constants.noteTapAreaRadius
 
     // TODO: fix later if this causes performance problems
     const note = this.notes.children

@@ -5,6 +5,8 @@ import {RectangleSprite} from './rect'
 import {Glow} from './pixi-utils'
 import * as util from './util'
 
+const noteSize = 50
+
 export const enum NoteState { active, hit, missed, holding }
 
 export class NoteData {
@@ -24,8 +26,8 @@ export class Note extends pixi.Container {
 
   constructor(time: number, position: number) {
     super()
-    this.addChild(new RectangleSprite('fill', 0, 0, 40))
-    this.addChild(new RectangleSprite('line', 0, 0, 50))
+    this.addChild(new RectangleSprite('fill', 0, 0, noteSize - 10))
+    this.addChild(new RectangleSprite('line', 0, 0, noteSize))
     this.data = new NoteData(time, position)
     this.position = this.data.getScreenPosition()
     this.rotation = util.radians(45)
@@ -40,7 +42,7 @@ export class Note extends pixi.Container {
 }
 
 export class NoteHitAnimation extends pixi.Container {
-  body = this.addChild(new RectangleSprite('fill', 0, 0, 50))
+  body = this.addChild(new RectangleSprite('fill', 0, 0, noteSize))
   glow = this.addChild(new Glow(this.body, 20))
   time = 0
 
@@ -66,7 +68,7 @@ export class NoteHitAnimation extends pixi.Container {
 }
 
 export class NoteReceptor extends pixi.Container {
-  body = this.addChild(new RectangleSprite('line', 0, 0, 50, undefined, undefined, undefined, 2))
+  body = this.addChild(new RectangleSprite('line', 0, 0, noteSize, undefined, undefined, undefined, 2))
 
   constructor(x: number, y: number, public note: Note) {
     super()
@@ -77,7 +79,7 @@ export class NoteReceptor extends pixi.Container {
   update(dt: number) {
     const notePos = this.note.getGlobalPosition()
     if (this.note.state === NoteState.active && notePos.y < this.y) {
-      const delta = util.delta(notePos.y, this.y, this.y - 200)
+      const delta = util.delta(notePos.y, this.y, this.y - 300)
       this.alpha = util.lerp(1, 0, util.clamp(delta, 0, 1))
     } else {
       this.alpha = 0
