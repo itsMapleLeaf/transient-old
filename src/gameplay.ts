@@ -7,11 +7,22 @@ import {TypedContainer} from './pixi-utils'
 import {JudgementAnimation, getJudgement} from './judgement'
 import {viewWidth, viewHeight, receptorPosition, noteSpacing} from './constants'
 
+class NoteContainer extends TypedContainer<Note> {
+  constructor() {
+    super()
+  }
+
+  songTimeUpdate(songTime: number) {
+    this.y = songTime * noteSpacing + receptorPosition
+  }
+}
+
 export class Gameplay extends GameState {
   stage = new pixi.Container()
   playfield = new Playfield()
-  notes = new TypedContainer<Note>()
-  animations = new TypedContainer<NoteHitAnimation | NoteReceptor>()
+  notes = new NoteContainer()
+  noteReceptors = new TypedContainer<NoteReceptor>()
+  noteHitAnimations = new TypedContainer<NoteHitAnimation>()
   judgement = new JudgementAnimation(viewWidth / 2, viewHeight * 0.25)
   songTime = -2
 
@@ -28,19 +39,22 @@ export class Gameplay extends GameState {
 
     for (const note of notes) {
       this.notes.addChild(note)
-      this.animations.addChild(new NoteReceptor(note.x, receptorPosition, note))
+      this.noteReceptors.addChild(new NoteReceptor(note.x, receptorPosition, note))
     }
 
-    this.stage.addChild(this.playfield)
-    this.stage.addChild(this.notes)
-    this.stage.addChild(this.animations)
-    this.stage.addChild(this.judgement)
+    this.stage.addChild(
+      this.playfield,
+      this.noteReceptors,
+      this.noteHitAnimations,
+      this.notes,
+      this.judgement)
   }
 
   update(dt: number) {
     this.songTime += dt
-    for (const anim of this.animations.children) anim.update(dt)
-    this.notes.y = this.songTime * noteSpacing + receptorPosition
+    this.notes.songTimeUpdate(this.songTime)
+    for (const anim of this.noteHitAnimations.children) anim.update(dt)
+    for (const rec of this.noteReceptors.children) rec.update(dt)
     this.judgement.update(dt)
   }
 
@@ -77,7 +91,7 @@ export class Gameplay extends GameState {
 
   addNoteHitAnimation(note: Note) {
     const anim = new NoteHitAnimation(note.x, receptorPosition)
-    this.animations.addChild(anim)
+    this.noteHitAnimations.addChild(anim)
   }
 
   render(renderer: pixi.WebGLRenderer | pixi.CanvasRenderer) {
