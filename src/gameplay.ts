@@ -5,7 +5,7 @@ import {Playfield} from './playfield'
 import {Note, NoteState, NoteHitAnimation, NoteReceptor} from './note'
 import {TypedContainer} from './pixi-utils'
 import {JudgementAnimation, getJudgement} from './judgement'
-import {viewWidth, viewHeight, receptorPosition, noteSpacing} from './constants'
+import * as constants from './constants'
 
 class NoteContainer extends TypedContainer<Note> {
   constructor() {
@@ -13,7 +13,7 @@ class NoteContainer extends TypedContainer<Note> {
   }
 
   songTimeUpdate(songTime: number) {
-    this.y = songTime * noteSpacing + receptorPosition
+    this.y = songTime * constants.noteSpacing + constants.receptorPosition
   }
 }
 
@@ -23,7 +23,7 @@ export class Gameplay extends GameState {
   notes = new NoteContainer()
   noteReceptors = new TypedContainer<NoteReceptor>()
   noteHitAnimations = new TypedContainer<NoteHitAnimation>()
-  judgement = new JudgementAnimation(viewWidth / 2, viewHeight * 0.25)
+  judgement = new JudgementAnimation(constants.viewWidth / 2, constants.viewHeight * 0.25)
   songTime = -2
 
   constructor() {
@@ -39,7 +39,7 @@ export class Gameplay extends GameState {
 
     for (const note of notes) {
       this.notes.addChild(note)
-      this.noteReceptors.addChild(new NoteReceptor(note.x, receptorPosition, note))
+      this.noteReceptors.addChild(new NoteReceptor(note.x, constants.receptorPosition, note))
     }
 
     this.stage.addChild(
@@ -90,7 +90,7 @@ export class Gameplay extends GameState {
   }
 
   addNoteHitAnimation(note: Note) {
-    const anim = new NoteHitAnimation(note.x, receptorPosition)
+    const anim = new NoteHitAnimation(note.x, constants.receptorPosition)
     this.noteHitAnimations.addChild(anim)
   }
 
