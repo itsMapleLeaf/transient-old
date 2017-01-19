@@ -1,23 +1,26 @@
 {
   "name": "transient",
+  "description": "a rhythm game",
   "version": "1.0.0",
-  "description": "",
   "author": "just nobody",
   "license": "MIT",
+  "repository": "https://github.com/just-nobody/transient",
+  "dependencies": {
+    "howler": "^2.0.2",
+    "webfontloader": "^1.6.27",
+    "pixi.js": "^4.3.2"
+  },
   "devDependencies": {
+    "@types/howler": "^2.0.0",
     "@types/pixi.js": "^4.3.1",
     "@types/webfontloader": "^1.6.28",
     "file-loader": "^0.9.0",
-    "howler": "^2.0.2",
     "html-webpack-plugin": "^2.26.0",
     "json-loader": "^0.5.4",
     "npm-run-all": "^4.0.0",
-    "phaser-ce": "^2.7.3",
-    "pixi.js": "^4.3.2",
     "ts-loader": "^1.3.3",
     "tslint": "^4.3.1",
     "typescript": "^2.1.5",
-    "webfontloader": "^1.6.27",
     "webpack": "^2.2.0-rc.4",
     "webpack-dev-server": "^2.2.0-rc.0",
     "yaml-loader": "^0.4.0"
