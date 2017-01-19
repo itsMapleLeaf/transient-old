@@ -66,7 +66,7 @@ export class NoteHitAnimation extends pixi.Container {
 }
 
 export class NoteReceptor extends pixi.Container {
-  body = this.addChild(new RectangleSprite('line', 0, 0, 50))
+  body = this.addChild(new RectangleSprite('line', 0, 0, 50, undefined, undefined, undefined, 2))
 
   constructor(x: number, y: number, public note: Note) {
     super()
@@ -77,7 +77,7 @@ export class NoteReceptor extends pixi.Container {
   update(dt: number) {
     const notePos = this.note.getGlobalPosition()
     if (this.note.state === NoteState.active && notePos.y < this.y) {
-      const delta = util.delta(notePos.y, this.y, this.y - noteSpacing)
+      const delta = util.delta(notePos.y, this.y, this.y - 200)
       this.alpha = util.lerp(1, 0, util.clamp(delta, 0, 1))
     } else {
       this.alpha = 0
