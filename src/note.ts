@@ -65,7 +65,7 @@ export class NoteHitAnimation extends pixi.Container {
   }
 }
 
-export class NoteApproachAnimation extends pixi.Container {
+export class NoteReceptor extends pixi.Container {
   body = this.addChild(new RectangleSprite('line', 0, 0, 50))
 
   constructor(x: number, y: number, public note: Note) {
@@ -77,11 +77,8 @@ export class NoteApproachAnimation extends pixi.Container {
   update(dt: number) {
     const notePos = this.note.getGlobalPosition()
     if (this.note.state === NoteState.active && notePos.y < this.y) {
-      const dist = Math.abs(notePos.y - this.y)
-      const time = 1 - util.clamp(dist / 500, 0, 1)
-      const scale = util.lerp(3, 1, time)
-      this.body.scale.set(scale, scale)
-      this.alpha = util.tween(0, 0.5, 0, 1, time, util.easeLinear)
+      const delta = util.delta(notePos.y, this.y, this.y - noteSpacing)
+      this.alpha = util.lerp(0, 1, util.clamp(delta, 0, 1))
     } else {
       this.alpha = 0
     }

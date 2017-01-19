@@ -2,7 +2,7 @@ import * as pixi from 'pixi.js'
 
 import {GameState} from './game'
 import {Playfield} from './playfield'
-import {Note, NoteState, NoteHitAnimation, NoteApproachAnimation} from './note'
+import {Note, NoteState, NoteHitAnimation, NoteReceptor} from './note'
 import {TypedContainer} from './pixi-utils'
 import {JudgementAnimation, getJudgement} from './judgement'
 import {viewWidth, viewHeight, receptorPosition, noteSpacing} from './constants'
@@ -11,7 +11,7 @@ export class Gameplay extends GameState {
   stage = new pixi.Container()
   playfield = new Playfield()
   notes = new TypedContainer<Note>()
-  animations = new TypedContainer<NoteHitAnimation | NoteApproachAnimation>()
+  animations = new TypedContainer<NoteHitAnimation | NoteReceptor>()
   judgement = new JudgementAnimation(viewWidth / 2, viewHeight * 0.25)
   songTime = -2
 
@@ -28,7 +28,7 @@ export class Gameplay extends GameState {
 
     for (const note of notes) {
       this.notes.addChild(note)
-      this.animations.addChild(new NoteApproachAnimation(note.x, receptorPosition, note))
+      this.animations.addChild(new NoteReceptor(note.x, receptorPosition, note))
     }
 
     this.stage.addChild(this.playfield)
