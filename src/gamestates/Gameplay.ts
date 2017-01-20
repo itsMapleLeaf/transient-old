@@ -2,8 +2,10 @@ import {GameState} from '../game'
 import * as constants from '../constants'
 import * as pixi from 'pixi.js'
 import * as util from '../util'
+import NoteExplosionSprite from '../sprites/NoteExplosionSprite'
 import NoteSprite from '../sprites/NoteSprite'
 import PlayfieldSprite from '../sprites/PlayfieldSprite'
+import Tween from '../Tween'
 
 const enum Judgement {
   absolute,
@@ -37,6 +39,22 @@ class Note {
   constructor(public data: NoteData) {}
 }
 
+class NoteExplosionAnimation extends pixi.Container {
+  sprite = this.addChild(new NoteExplosionSprite())
+  bounce = new Tween(0, 80, 0.3, v => v ** 2)
+  fade = new Tween(1, 0, 0.3)
+
+  constructor(x: number, y: number) {
+    super()
+    this.position.set(x, y)
+  }
+
+  update(dt: number) {
+    this.sprite.y = this.bounce.update(dt)
+    this.sprite.alpha = this.fade.update(dt)
+  }
+}
+
 class Gameplay extends GameState {
   song: SongData = {
     title: 'test song',
@@ -54,6 +72,7 @@ class Gameplay extends GameState {
   noteLayer = new pixi.Container()
 
   notes = [] as Note[]
+  animations = [] as NoteExplosionAnimation[]
 
   songTime = -constants.songStartDelay
 
@@ -75,6 +94,12 @@ class Gameplay extends GameState {
   update(dt: number) {
     this.songTime += dt
     this.noteLayer.y = constants.receptorPosition + this.songTime * constants.noteSpacing
+
+    for (const item of this.stage.children) {
+      if (item instanceof NoteExplosionAnimation) {
+        item.update(dt)
+      }
+    }
   }
 
   pointerdown(event: pixi.interaction.InteractionEvent) {
@@ -83,16 +108,20 @@ class Gameplay extends GameState {
 
   tryTapNote(touch: pixi.Point) {
     for (const note of this.notes) {
-      if (note.state === NoteState.active) {
-        const touchDistance = Math.abs(note.sprite.x - touch.x)
-        const timing = this.songTime - note.data.time
-        const judgement = this.getJudgement(timing)
-        if (touchDistance <= constants.maxTapDistance && judgement !== Judgement.none) {
-          note.state = NoteState.hit
-          note.sprite.alpha = 0
-          break
-        }
-      }
+      const touchDistance = Math.abs(note.sprite.x - touch.x)
+      const timing = this.songTime - note.data.time
+      const judgement = this.getJudgement(timing)
+
+      if (note.state !== NoteState.active) continue
+      if (touchDistance > constants.maxTapDistance) continue
+      if (judgement === Judgement.none) continue
+
+      note.state = NoteState.hit
+      note.sprite.alpha = 0
+
+      this.stage.addChild(new NoteExplosionAnimation(note.sprite.x, constants.receptorPosition))
+
+      break
     }
   }
 
