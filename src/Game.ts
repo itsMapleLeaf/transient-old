@@ -1,6 +1,6 @@
 import * as pixi from 'pixi.js'
 
-export class Game {
+export default class Game {
   input = new pixi.interaction.InteractionManager(this.renderer)
 
   constructor(public renderer: pixi.WebGLRenderer | pixi.CanvasRenderer, public state: GameState) {

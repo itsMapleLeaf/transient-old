@@ -19,4 +19,13 @@ export const judgementPosition = viewHeight * 0.25
 export const songStartDelay = 2
 
 // horizontal distance required to hit a note
-export const noteTapAreaRadius = 80
+export const maxTapDistance = 80
+
+// the visual size of notes
+export const noteSize = 50
+
+// timing window constants
+export const timingWindowAbsolute = 0.02
+export const timingWindowPerfect = 0.08
+export const timingWindowGreat = 0.15
+export const timingWindowBad = 0.28

@@ -22,14 +22,10 @@ export class NoteData {
 export class NoteSprite extends pixi.Container {
   state = NoteState.active
 
-  data: NoteData
-
-  constructor(time: number, position: number) {
+  constructor() {
     super()
     this.addChild(new RectangleSprite('fill', 0, 0, noteSize - 10))
     this.addChild(new RectangleSprite('line', 0, 0, noteSize))
-    this.data = new NoteData(time, position)
-    this.position = this.data.getScreenPosition()
     this.rotation = util.radians(45)
   }
 
@@ -54,17 +50,6 @@ export class NoteHitSprite extends pixi.Container {
     this.position = this.origin
     this.rotation = util.radians(45)
   }
-
-  update(dt: number) {
-    this.time += dt / 0.4
-    if (this.time >= 1) {
-      return true
-    }
-    this.position.y = this.origin.y + util.tween(0, 100, 0, 0.8, this.time, t => t ** 2.5)
-    this.alpha = util.tween(1, 0, 0, 0.8, this.time, util.easeQuadIn)
-    this.glow.blurFilter.blur = util.tween(30, 10, 0, 0.4, this.time)
-    return false
-  }
 }
 
 export class NoteReceptorSprite extends pixi.Container {
@@ -74,15 +59,5 @@ export class NoteReceptorSprite extends pixi.Container {
     super()
     this.position.set(x, y)
     this.rotation = util.radians(45)
-  }
-
-  update(note: NoteSprite) {
-    const notePos = note.getGlobalPosition()
-    if (note.state === NoteState.active && notePos.y < this.y) {
-      const delta = util.delta(notePos.y, this.y, this.y - 300)
-      this.alpha = util.lerp(1, 0, util.clamp(delta, 0, 1))
-    } else {
-      this.alpha = 0
-    }
   }
 }

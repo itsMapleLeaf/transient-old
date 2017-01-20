@@ -74,3 +74,7 @@ export class JudgementSprite extends pixi.Container {
     this.judgement = judgement
   }
 }
+
+export class ComboSprite extends pixi.Container {
+  // TODO
+}
