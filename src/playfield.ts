@@ -3,7 +3,7 @@ import {viewWidth, viewHeight, receptorPosition} from './constants'
 import {RectangleSprite} from './rect'
 import {Glow} from './pixi-utils'
 
-export class Playfield extends pixi.Container {
+export class PlayfieldSprite extends pixi.Container {
   constructor() {
     super()
 

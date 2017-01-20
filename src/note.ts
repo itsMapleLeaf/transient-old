@@ -19,7 +19,7 @@ export class NoteData {
   }
 }
 
-export class Note extends pixi.Container {
+export class NoteSprite extends pixi.Container {
   state = NoteState.active
 
   data: NoteData
@@ -41,7 +41,7 @@ export class Note extends pixi.Container {
   }
 }
 
-export class NoteHitAnimation extends pixi.Container {
+export class NoteHitSprite extends pixi.Container {
   body = this.addChild(new RectangleSprite('fill', 0, 0, noteSize))
   glow = this.addChild(new Glow(this.body, 20))
   time = 0
@@ -67,7 +67,7 @@ export class NoteHitAnimation extends pixi.Container {
   }
 }
 
-export class NoteReceptor extends pixi.Container {
+export class NoteReceptorSprite extends pixi.Container {
   body = this.addChild(new RectangleSprite('line', 0, 0, noteSize, undefined, undefined, undefined, 2))
 
   constructor(x: number, y: number) {
@@ -76,7 +76,7 @@ export class NoteReceptor extends pixi.Container {
     this.rotation = util.radians(45)
   }
 
-  update(note: Note) {
+  update(note: NoteSprite) {
     const notePos = note.getGlobalPosition()
     if (note.state === NoteState.active && notePos.y < this.y) {
       const delta = util.delta(notePos.y, this.y, this.y - 300)

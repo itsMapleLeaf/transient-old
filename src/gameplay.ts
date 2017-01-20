@@ -1,35 +1,35 @@
 import * as pixi from 'pixi.js'
 
 import {GameState} from './game'
-import {Judgement, JudgementAnimation, getJudgement} from './judgement'
-import {Note, NoteState, NoteHitAnimation, NoteReceptor} from './note'
-import {Playfield} from './playfield'
+import {Judgement, JudgementSprite, getJudgement} from './judgement'
+import {NoteSprite, NoteState, NoteHitSprite, NoteReceptorSprite} from './note'
+import {PlayfieldSprite} from './playfield'
 import {TypedContainer} from './pixi-utils'
 import * as constants from './constants'
 
 export class Gameplay extends GameState {
   stage = new pixi.Container()
-  playfield = new Playfield()
-  notes = new TypedContainer<Note>()
-  noteReceptors = new TypedContainer<NoteReceptor>()
-  noteHitAnimations = new TypedContainer<NoteHitAnimation>()
-  judgement = new JudgementAnimation(constants.viewWidth / 2, constants.judgementPosition)
+  playfield = new PlayfieldSprite()
+  notes = new TypedContainer<NoteSprite>()
+  noteReceptors = new TypedContainer<NoteReceptorSprite>()
+  noteHitAnimations = new TypedContainer<NoteHitSprite>()
+  judgement = new JudgementSprite(constants.viewWidth / 2, constants.judgementPosition)
   songTime = -constants.songStartDelay
 
   constructor() {
     super()
 
     const notes = [
-      new Note(0 / 2, 0 / 4),
-      new Note(1 / 2, 1 / 4),
-      new Note(2 / 2, 2 / 4),
-      new Note(3 / 2, 3 / 4),
-      new Note(4 / 2, 4 / 4),
+      new NoteSprite(0 / 2, 0 / 4),
+      new NoteSprite(1 / 2, 1 / 4),
+      new NoteSprite(2 / 2, 2 / 4),
+      new NoteSprite(3 / 2, 3 / 4),
+      new NoteSprite(4 / 2, 4 / 4),
     ]
 
     for (const note of notes) {
       this.notes.addChild(note)
-      this.noteReceptors.addChild(new NoteReceptor(note.x, constants.receptorPosition))
+      this.noteReceptors.addChild(new NoteReceptorSprite(note.x, constants.receptorPosition))
     }
 
     this.stage.addChild(
@@ -77,8 +77,8 @@ export class Gameplay extends GameState {
     }
   }
 
-  addNoteHitAnimation(note: Note) {
-    const anim = new NoteHitAnimation(note.x, constants.receptorPosition)
+  addNoteHitAnimation(note: NoteSprite) {
+    const anim = new NoteHitSprite(note.x, constants.receptorPosition)
     this.noteHitAnimations.addChild(anim)
   }
 

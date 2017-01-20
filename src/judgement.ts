@@ -39,7 +39,7 @@ export function getJudgement(timing: number) {
   return Judgement.none
 }
 
-export class JudgementAnimation extends pixi.Container {
+export class JudgementSprite extends pixi.Container {
   text = this.addChild(new pixi.Text('ABSOLUTE', {
     fill: 0xffffff,
     fontFamily: 'Teko',
