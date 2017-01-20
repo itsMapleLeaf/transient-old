@@ -7,20 +7,10 @@ import {Playfield} from './playfield'
 import {TypedContainer} from './pixi-utils'
 import * as constants from './constants'
 
-class NoteContainer extends TypedContainer<Note> {
-  constructor() {
-    super()
-  }
-
-  songTimeUpdate(songTime: number) {
-    this.y = songTime * constants.noteSpacing + constants.receptorPosition
-  }
-}
-
 export class Gameplay extends GameState {
   stage = new pixi.Container()
   playfield = new Playfield()
-  notes = new NoteContainer()
+  notes = new TypedContainer<Note>()
   noteReceptors = new TypedContainer<NoteReceptor>()
   noteHitAnimations = new TypedContainer<NoteHitAnimation>()
   judgement = new JudgementAnimation(constants.viewWidth / 2, constants.judgementPosition)
@@ -39,7 +29,7 @@ export class Gameplay extends GameState {
 
     for (const note of notes) {
       this.notes.addChild(note)
-      this.noteReceptors.addChild(new NoteReceptor(note.x, constants.receptorPosition, note))
+      this.noteReceptors.addChild(new NoteReceptor(note.x, constants.receptorPosition))
     }
 
     this.stage.addChild(
@@ -52,41 +42,39 @@ export class Gameplay extends GameState {
 
   update(dt: number) {
     this.songTime += dt
-    this.notes.songTimeUpdate(this.songTime)
-    for (const anim of this.noteHitAnimations.children) anim.update(dt)
-    for (const rec of this.noteReceptors.children) rec.update(dt)
+
+    // update note positions
+    this.notes.y = this.songTime * constants.noteSpacing + constants.receptorPosition
+
+    // update hit animations
+    for (const anim of this.noteHitAnimations.children) {
+      if (anim.update(dt)) {
+        anim.destroy()
+      }
+    }
+
+    // update note receptors
+    for (let i = 0; i < this.notes.children.length; i++) {
+      this.noteReceptors.children[i].update(this.notes.children[i])
+    }
+
+    // update judgement animation
     this.judgement.update(dt)
   }
 
   pointerdown(event: pixi.interaction.InteractionEvent) {
-    const note = this.findTappedNote(event.data.global)
-    if (note) {
-      note.setState(NoteState.hit)
-      this.addNoteHitAnimation(note)
-      this.judgement.play(getJudgement(this.songTime - note.data.time))
+    for (const note of this.notes.children) {
+      if (note.state === NoteState.active) {
+        const judgement = getJudgement(note.data.time - this.songTime)
+        const tapDistance = Math.abs(event.data.global.x - note.x)
+        if (judgement !== Judgement.none && tapDistance < constants.noteTapAreaRadius) {
+          note.setState(NoteState.hit)
+          this.addNoteHitAnimation(note)
+          this.judgement.play(judgement)
+          break
+        }
+      }
     }
-  }
-
-  findTappedNote(tap: pixi.Point) {
-    const isActive = (note: Note) =>
-      note.state === NoteState.active
-
-    const checkTiming = (note: Note) =>
-      getJudgement(note.data.time - this.songTime) !== Judgement.none
-
-    const checkTapPosition = (note: Note) =>
-      Math.abs(tap.x - note.x) < constants.noteTapAreaRadius
-
-    // TODO: fix later if this causes performance problems
-    const note = this.notes.children
-      .filter(isActive)
-      .filter(checkTiming)
-      .filter(checkTapPosition)[0]
-
-    if (note) {
-      return note
-    }
-    return null
   }
 
   addNoteHitAnimation(note: Note) {

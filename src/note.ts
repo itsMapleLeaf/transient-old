@@ -58,27 +58,27 @@ export class NoteHitAnimation extends pixi.Container {
   update(dt: number) {
     this.time += dt / 0.4
     if (this.time >= 1) {
-      this.destroy()
-    } else {
-      this.position.y = this.origin.y + util.tween(0, 100, 0, 0.8, this.time, t => t ** 2.5)
-      this.alpha = util.tween(1, 0, 0, 0.8, this.time, util.easeQuadIn)
-      this.glow.blurFilter.blur = util.tween(30, 10, 0, 0.4, this.time)
+      return true
     }
+    this.position.y = this.origin.y + util.tween(0, 100, 0, 0.8, this.time, t => t ** 2.5)
+    this.alpha = util.tween(1, 0, 0, 0.8, this.time, util.easeQuadIn)
+    this.glow.blurFilter.blur = util.tween(30, 10, 0, 0.4, this.time)
+    return false
   }
 }
 
 export class NoteReceptor extends pixi.Container {
   body = this.addChild(new RectangleSprite('line', 0, 0, noteSize, undefined, undefined, undefined, 2))
 
-  constructor(x: number, y: number, public note: Note) {
+  constructor(x: number, y: number) {
     super()
     this.position.set(x, y)
     this.rotation = util.radians(45)
   }
 
-  update(dt: number) {
-    const notePos = this.note.getGlobalPosition()
-    if (this.note.state === NoteState.active && notePos.y < this.y) {
+  update(note: Note) {
+    const notePos = note.getGlobalPosition()
+    if (note.state === NoteState.active && notePos.y < this.y) {
       const delta = util.delta(notePos.y, this.y, this.y - 300)
       this.alpha = util.lerp(1, 0, util.clamp(delta, 0, 1))
     } else {
