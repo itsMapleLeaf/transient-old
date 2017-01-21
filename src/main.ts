@@ -1,4 +1,5 @@
 import * as pixi from 'pixi.js'
+import {Game, viewWidth, viewHeight} from './game'
 
 function animationFrame(): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -18,16 +19,8 @@ async function main() {
   await loadAssets()
 
   const view = document.querySelector('canvas') as HTMLCanvasElement
-  const renderer = pixi.autoDetectRenderer(540, 960, { view })
-  const stage = new pixi.Container()
-
-  const background = new pixi.Sprite(pixi.loader.resources['background'].texture)
-  const note = new pixi.Sprite(pixi.loader.resources['note'].texture)
-
-  note.position.set(100, 100)
-
-  stage.addChild(background)
-  stage.addChild(note)
+  const renderer = pixi.autoDetectRenderer(viewWidth, viewHeight, { view })
+  const game = new Game(renderer)
 
   let time = await animationFrame()
 
@@ -36,9 +29,8 @@ async function main() {
     const elapsed = (now - time) / 1000
     time = now
 
-    note.y += 300 * elapsed
-
-    renderer.render(stage)
+    game.update(elapsed)
+    game.draw()
   }
 }
 
