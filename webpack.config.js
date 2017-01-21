@@ -12,7 +12,7 @@ module.exports = {
       { test: /\.ts$/, loader: 'ts-loader' },
       { test: /\.json$/, loader: 'json-loader' },
       { test: /\.yaml$/, loader: 'json-loader!yaml-loader' },
-      { test: /\.(png|mp3|ogg)$/, loader: 'file-loader' },
+      { test: /\.(svg|png|mp3|ogg)$/, loader: 'file-loader' },
     ]
   },
   plugins: [
