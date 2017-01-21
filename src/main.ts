@@ -11,6 +11,7 @@ function loadAssets(): Promise<pixi.loaders.Loader> {
   return new Promise((resolve, reject) => {
     pixi.loader.add('note', require('../assets/images/note.svg'))
     pixi.loader.add('background', require('../assets/images/background.svg'))
+    pixi.loader.add('note-receptor', require('../assets/images/note-receptor.svg'))
     pixi.loader.load(resolve)
   })
 }
