@@ -9,25 +9,61 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="24.87359mm"
-   height="24.87359mm"
-   viewBox="0 0 88.134769 88.134769"
+   width="23.763609mm"
+   height="23.763609mm"
+   viewBox="0 0 84.201769 84.201769"
    id="svg5809"
    version="1.1"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="note.svg">
+   sodipodi:docname="note.svg"
+   inkscape:export-filename="E:\Kingdaro\Code\js\transient\assets\note.png"
+   inkscape:export-xdpi="89.800003"
+   inkscape:export-ydpi="89.800003">
   <defs
-     id="defs5811" />
+     id="defs5811">
+    <filter
+       style="color-interpolation-filters:sRGB"
+       inkscape:label="Drop Shadow"
+       id="filter13333">
+      <feFlood
+         flood-opacity="1"
+         flood-color="rgb(255,255,255)"
+         result="flood"
+         id="feFlood13335" />
+      <feComposite
+         in="flood"
+         in2="SourceGraphic"
+         operator="in"
+         result="composite1"
+         id="feComposite13337" />
+      <feGaussianBlur
+         in="composite1"
+         stdDeviation="14.5833"
+         result="blur"
+         id="feGaussianBlur13339" />
+      <feOffset
+         dx="0"
+         dy="0"
+         result="offset"
+         id="feOffset13341" />
+      <feComposite
+         in="SourceGraphic"
+         in2="offset"
+         operator="over"
+         result="composite2"
+         id="feComposite13343" />
+    </filter>
+  </defs>
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
      bordercolor="#666666"
      borderopacity="1.0"
-     inkscape:pageopacity="0.0"
+     inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="3.959798"
-     inkscape:cx="50.60196"
-     inkscape:cy="58.215191"
+     inkscape:zoom="2.8"
+     inkscape:cx="19.182172"
+     inkscape:cy="56.407894"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -39,7 +75,9 @@
      inkscape:window-height="1027"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
-     inkscape:window-maximized="1" />
+     inkscape:window-maximized="1"
+     inkscape:snap-bbox="true"
+     inkscape:snap-bbox-midpoints="true" />
   <metadata
      id="metadata5814">
     <rdf:RDF>
@@ -56,11 +94,11 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-341.6469,-479.72338)">
+     transform="translate(-343.61354,-481.69005)">
     <rect
        transform="matrix(0.70710678,0.70710678,-0.70710678,0.70710678,0,0)"
-       y="69.664986"
-       x="615.1474"
+       y="69.665016"
+       x="615.14758"
        height="55.93964"
        width="55.93964"
        id="rect4151"
