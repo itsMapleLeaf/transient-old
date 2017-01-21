@@ -17,6 +17,11 @@ export default class Tween {
     return this.value
   }
 
+  set(time: number) {
+    this.time = time
+    return this.value
+  }
+
   get value() {
     const delta = util.clamp(this.time / this.duration, 0, 1)
     const value = this.startValue + (this.endValue - this.startValue) * this.ease(delta)

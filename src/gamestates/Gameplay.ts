@@ -33,16 +33,21 @@ type SongData = {
   notes: NoteData[]
 }
 
+abstract class Actor extends pixi.Container {
+  abstract update(dt: number): void
+}
+
 class Note {
   sprite = new NoteSprite()
   state = NoteState.active
   constructor(public data: NoteData) {}
 }
 
-class NoteExplosionAnimation extends pixi.Container {
+class NoteExplosionAnimation extends Actor {
   sprite = this.addChild(new NoteExplosionSprite())
   bounce = new Tween(0, 80, 0.3, v => v ** 2)
   fade = new Tween(1, 0, 0.3)
+  time = 0
 
   constructor(x: number, y: number) {
     super()
@@ -50,8 +55,13 @@ class NoteExplosionAnimation extends pixi.Container {
   }
 
   update(dt: number) {
-    this.sprite.y = this.bounce.update(dt)
-    this.sprite.alpha = this.fade.update(dt)
+    this.time += dt
+    if (this.time < 0.3) {
+      this.sprite.y = this.bounce.set(this.time)
+      this.sprite.alpha = this.fade.set(this.time)
+    } else {
+      this.destroy()
+    }
   }
 }
 
@@ -70,9 +80,7 @@ class Gameplay extends GameState {
 
   stage = new pixi.Container()
   noteLayer = new pixi.Container()
-
   notes = [] as Note[]
-  animations = [] as NoteExplosionAnimation[]
 
   songTime = -constants.songStartDelay
 
@@ -96,7 +104,7 @@ class Gameplay extends GameState {
     this.noteLayer.y = constants.receptorPosition + this.songTime * constants.noteSpacing
 
     for (const item of this.stage.children) {
-      if (item instanceof NoteExplosionAnimation) {
+      if (item instanceof Actor) {
         item.update(dt)
       }
     }

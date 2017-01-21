@@ -1,10 +1,28 @@
 import {viewWidth, viewHeight} from './constants'
 import * as pixi from 'pixi.js'
 import * as WebFontLoader from 'webfontloader'
-import Game from './Game'
+import {Game} from './game'
 import Gameplay from './gamestates/Gameplay'
 
-function start()  {
+function loadFonts(families: string[]): Promise<{}> {
+  return new Promise((resolve, reject) => {
+    WebFontLoader.load({
+      google: { families },
+      active: resolve,
+      inactive: reject
+    })
+  })
+}
+
+function animationFrame(): Promise<number> {
+  return new Promise((resolve, reject) => {
+    window.requestAnimationFrame(resolve)
+  })
+}
+
+async function main() {
+  await loadFonts(['Teko'])
+
   const canvas = document.querySelector('canvas') as HTMLCanvasElement
 
   const renderer = pixi.autoDetectRenderer(viewWidth, viewHeight, {
@@ -13,22 +31,14 @@ function start()  {
   })
 
   const game = new Game(renderer, new Gameplay())
+  let time = await animationFrame()
 
-  window.requestAnimationFrame(function frame(now: number, time = 0) {
+  while (true) {
+    const now = await animationFrame()
     const elapsed = (now - time) / 1000
     time = now
     game.update(elapsed)
-    game.render()
-    window.requestAnimationFrame(now => frame(now, time))
-  })
+  }
 }
 
-WebFontLoader.load({
-  google: {
-    families: ['Teko']
-  },
-  active: start,
-  loading() {
-    console.log('Loading fonts...')
-  }
-})
+main().catch(console.error.bind(console))
