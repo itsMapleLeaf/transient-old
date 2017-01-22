@@ -112,18 +112,18 @@ export default class Game {
     this.explosions = this.explosions.filter(anim => anim.update(dt))
   }
 
-  draw(renderer: pixi.SystemRenderer) {
-    this.renderNotes()
-    this.renderReceptors()
-    this.renderExplosions()
-    renderer.render(this.stage)
-  }
-
   pointerdown(event: pixi.interaction.InteractionEvent) {
     const note = this.tryTapNote(event.data.global)
     if (note) {
       this.explosions.push(new NoteExplosion(note.screenPosition.x, receptorPosition))
     }
+  }
+
+  draw(renderer: pixi.SystemRenderer) {
+    this.renderNotes()
+    this.renderReceptors()
+    this.renderExplosions()
+    renderer.render(this.stage)
   }
 
   renderNotes() {
