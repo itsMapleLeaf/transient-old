@@ -72,8 +72,8 @@ function getTrackOffset(songTime: number) {
   return receptorPosition + songTime * noteSpacing
 }
 
-function updateNoteContainerPosition(songTime: number, container: pixi.Container) {
-  container.y = getTrackOffset(songTime)
+function setSpritePosition(x: number, y: number, sprite: pixi.DisplayObject) {
+  sprite.position.set(x, y)
 }
 
 function updateNoteExplosions(dt: number, explosions: NoteExplosionAnimation[]) {
@@ -160,7 +160,7 @@ export default class Game {
 
   update(dt: number) {
     this.songTime += dt
-    updateNoteContainerPosition(this.songTime, this.noteContainer)
+    setSpritePosition(0, getTrackOffset(this.songTime), this.noteContainer)
     updateNoteExplosions(dt, this.explosions)
   }
 
