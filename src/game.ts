@@ -12,20 +12,31 @@ enum NoteState {
   holding,
 }
 
-interface Note {
-  time: number
-  position: number
-  state: NoteState
+class Note {
+  state = NoteState.active
+
+  constructor(public time: number, public position: number) {}
+
+  render() {
+    if (this.state === NoteState.active) {
+      const pos = getScreenPosition(this)
+      return createNoteSprite(pos.x, pos.y)
+    }
+    return undefined
+  }
 }
 
-interface NoteExplosionAnimation {
-  x: number
-  y: number
-  time: number
-}
+class NoteExplosionAnimation {
+  time = 0
 
-function createNote(time: number, position: number): Note {
-  return { time, position, state: NoteState.active }
+  constructor(public x: number, public y: number) {}
+
+  render() {
+    const sprite = createExplosionSprite(this.x, this.y)
+    sprite.y += this.time ** 2.5 * 80
+    sprite.alpha = 1 - this.time
+    return sprite
+  }
 }
 
 function createSprite(textureName: string, x = 0, y = 0) {
@@ -82,14 +93,6 @@ function updateNoteExplosions(dt: number, explosions: NoteExplosionAnimation[]) 
   }
 }
 
-function renderNote(note: Note) {
-  if (note.state === NoteState.active) {
-    const pos = getScreenPosition(note)
-    return createNoteSprite(pos.x, pos.y)
-  }
-  return undefined
-}
-
 function renderReceptor(songTime: number, note: Note) {
   const pos = getScreenPosition(note)
   if (pos.y + getTrackOffset(songTime) < receptorPosition && note.state === NoteState.active) {
@@ -97,13 +100,6 @@ function renderReceptor(songTime: number, note: Note) {
     return createReceptorSprite(pos.x, receptorPosition, alpha)
   }
   return undefined
-}
-
-function renderNoteExplosion(anim: NoteExplosionAnimation) {
-  const sprite = createExplosionSprite(anim.x, anim.y)
-  sprite.y += anim.time ** 2.5 * 80
-  sprite.alpha = 1 - anim.time
-  return sprite
 }
 
 function renderCollection<T>(items: T[], renderer: (item: T) => pixi.DisplayObject | void, subject: pixi.Container) {
@@ -130,11 +126,11 @@ function tryTapNote(notes: Note[], songTime: number, touch: pixi.Point) {
 
 export default class Game {
   notes = [
-    createNote(0 / 2, 0 / 4),
-    createNote(1 / 2, 1 / 4),
-    createNote(2 / 2, 2 / 4),
-    createNote(3 / 2, 3 / 4),
-    createNote(4 / 2, 4 / 4),
+    new Note(0 / 2, 0 / 4),
+    new Note(1 / 2, 1 / 4),
+    new Note(2 / 2, 2 / 4),
+    new Note(3 / 2, 3 / 4),
+    new Note(4 / 2, 4 / 4),
   ]
 
   explosions = [] as NoteExplosionAnimation[]
@@ -164,13 +160,13 @@ export default class Game {
     const note = tryTapNote(this.notes, this.songTime, event.data.global)
     if (note) {
       const pos = getScreenPosition(note)
-      this.explosions.push({ x: pos.x, y: receptorPosition, time: 0 })
+      this.explosions.push(new NoteExplosionAnimation(pos.x, receptorPosition))
     }
   }
 
   draw(renderer: pixi.SystemRenderer) {
-    renderCollection(this.notes, renderNote, this.noteContainer)
-    renderCollection(this.explosions, renderNoteExplosion, this.explosionContainer)
+    renderCollection(this.notes, note => note.render(), this.noteContainer)
+    renderCollection(this.explosions, anim => anim.render(), this.explosionContainer)
     renderCollection(this.notes, rec => renderReceptor(this.songTime, rec), this.receptorContainer)
     renderer.render(this.stage)
   }
