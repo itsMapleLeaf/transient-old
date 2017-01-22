@@ -128,21 +128,22 @@ export default class Game {
 
   renderNotes() {
     this.noteContainer.removeChildren()
-    for (const note of this.notes) {
-      if (note.state === NoteState.active) {
-        this.noteContainer.addChild(note.render())
-      }
-    }
+
+    this.notes
+      .filter(note => note.state === NoteState.active)
+      .forEach(note => this.noteContainer.addChild(note.render()))
   }
 
   renderReceptors() {
     this.receptorContainer.removeChildren()
-    for (const note of this.notes) {
-      if (note.state === NoteState.active && this.song.time < note.data.time) {
+
+    this.notes
+      .filter(note => note.state === NoteState.active)
+      .filter(note => this.song.time < note.data.time)
+      .forEach(note => {
         const alpha = 1 - Math.abs(this.song.time - note.data.time) * 0.3
         this.receptorContainer.addChild(renderReceptor(note.screenPosition.x, receptorPosition, alpha))
-      }
-    }
+      })
   }
 
   renderExplosions() {
