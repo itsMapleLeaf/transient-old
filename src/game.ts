@@ -21,30 +21,18 @@ function renderBackground() {
   return new pixi.Sprite(getTexture('background'))
 }
 
-function renderReceptor(x: number, y: number, alpha: number) {
-  const sprite = new pixi.Sprite(getTexture('receptor'))
-  sprite.position.set(x, y)
-  sprite.pivot.set(sprite.width / 2, sprite.height / 2)
-  sprite.alpha = alpha
-  return sprite
-}
-
 class Song {
   time = -2
-}
-
-class NoteData {
-  constructor(public time: number, public position: number) {}
 }
 
 class Note {
   state = NoteState.active
 
-  constructor(public data: NoteData) {}
+  constructor(public time: number, public position: number) {}
 
   get screenPosition() {
-    const x = util.lerp(110, viewWidth - 110, this.data.position)
-    const y = -this.data.time * noteSpacing
+    const x = util.lerp(110, viewWidth - 110, this.position)
+    const y = -this.time * noteSpacing
     return new pixi.Point(x, y)
   }
 
@@ -77,6 +65,18 @@ class NoteExplosion {
   }
 }
 
+class Receptor {
+  constructor(public note: Note, public songTime: number) {}
+
+  render() {
+    const sprite = new pixi.Sprite(getTexture('receptor'))
+    sprite.position.set(this.note.screenPosition.x, receptorPosition)
+    sprite.pivot.set(sprite.width / 2, sprite.height / 2)
+    sprite.alpha = 1 - Math.abs(this.songTime - this.note.time)
+    return sprite
+  }
+}
+
 export default class Game {
   song = new Song()
   notes = [] as Note[]
@@ -89,11 +89,11 @@ export default class Game {
 
   constructor() {
     this.notes = [
-      new Note(new NoteData(0 / 2, 0 / 4)),
-      new Note(new NoteData(1 / 2, 1 / 4)),
-      new Note(new NoteData(2 / 2, 2 / 4)),
-      new Note(new NoteData(3 / 2, 3 / 4)),
-      new Note(new NoteData(4 / 2, 4 / 4)),
+      new Note(0 / 2, 0 / 4),
+      new Note(1 / 2, 1 / 4),
+      new Note(2 / 2, 2 / 4),
+      new Note(3 / 2, 3 / 4),
+      new Note(4 / 2, 4 / 4),
     ]
 
     this.stage.addChild(renderBackground())
@@ -128,34 +128,33 @@ export default class Game {
 
   renderNotes() {
     this.noteContainer.removeChildren()
-
     this.notes
       .filter(note => note.state === NoteState.active)
-      .forEach(note => this.noteContainer.addChild(note.render()))
+      .map(note => note.render())
+      .forEach(sprite => this.noteContainer.addChild(sprite))
   }
 
   renderReceptors() {
     this.receptorContainer.removeChildren()
-
     this.notes
       .filter(note => note.state === NoteState.active)
-      .filter(note => this.song.time < note.data.time)
-      .forEach(note => {
-        const alpha = 1 - Math.abs(this.song.time - note.data.time) * 0.3
-        this.receptorContainer.addChild(renderReceptor(note.screenPosition.x, receptorPosition, alpha))
-      })
+      .filter(note => this.song.time < note.time)
+      .map(note => new Receptor(note, this.song.time).render())
+      .forEach(sprite => this.receptorContainer.addChild(sprite))
   }
 
   renderExplosions() {
     this.explosionContainer.removeChildren()
-    this.explosions.forEach(exp => this.explosionContainer.addChild(exp.render()))
+    this.explosions
+      .map(exp => exp.render())
+      .forEach(sprite => this.explosionContainer.addChild(sprite))
   }
 
   tryTapNote(touch: pixi.Point) {
     for (const note of this.notes as Note[]) {
       const isActive = note.state === NoteState.active
       const touchDistance = Math.abs(note.screenPosition.x - touch.x)
-      const touchTiming = Math.abs(this.song.time - note.data.time)
+      const touchTiming = Math.abs(this.song.time - note.time)
       if (isActive && touchDistance < 80 && touchTiming < 0.25) {
         note.state = NoteState.hit
         return note
