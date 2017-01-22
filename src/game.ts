@@ -18,8 +18,11 @@ interface Note {
   state: NoteState
 }
 
-interface NoteExplosionAnimation {
+interface Animation {
   time: number
+}
+
+interface NoteExplosion extends Animation {
   x: number
   y: number
 }
@@ -28,7 +31,7 @@ function createNote(time: number, position: number): Note {
   return { time, position, state: NoteState.active }
 }
 
-function createNoteExplosion(x: number, y: number): NoteExplosionAnimation {
+function createNoteExplosion(x: number, y: number): NoteExplosion {
   return { x, y, time: 0 }
 }
 
@@ -76,12 +79,23 @@ function setSpritePosition(x: number, y: number, sprite: pixi.DisplayObject) {
   sprite.position.set(x, y)
 }
 
-function updateNoteExplosions(dt: number, explosions: NoteExplosionAnimation[]) {
-  for (let i = explosions.length - 1; i >= 0; i--) {
-    const anim = explosions[i]
-    anim.time += dt * 3
-    if (anim.time > 1) {
-      explosions.splice(i, 1)
+function updateAnimation(dt: number, anim: Animation) {
+  anim.time += dt
+}
+
+function isAnimationExpired(anim: Animation) {
+  return anim.time > 1
+}
+
+function apply<T>(action: (item: T) => any, items: T[]) {
+  items.forEach(action)
+}
+
+function sweep<T>(clause: (item: T) => boolean, items: T[]) {
+  for (let i = items.length - 1; i >= 0; i--) {
+    const item = items[i]
+    if (clause(item)) {
+      items.splice(i, 1)
     }
   }
 }
@@ -103,7 +117,7 @@ function renderNote(note: Note) {
   return undefined
 }
 
-function renderNoteExplosion(anim: NoteExplosionAnimation) {
+function renderNoteExplosion(anim: NoteExplosion) {
   const sprite = createExplosionSprite(anim.x, anim.y)
   sprite.y += anim.time ** 2.5 * 80
   sprite.alpha = 1 - anim.time
@@ -141,7 +155,7 @@ export default class Game {
     createNote(4 / 2, 4 / 4),
   ]
 
-  explosions = [] as NoteExplosionAnimation[]
+  explosions = [] as NoteExplosion[]
 
   stage = new pixi.Container()
   noteContainer = new pixi.Container()
@@ -160,8 +174,11 @@ export default class Game {
 
   update(dt: number) {
     this.songTime += dt
+
     setSpritePosition(0, getTrackOffset(this.songTime), this.noteContainer)
-    updateNoteExplosions(dt, this.explosions)
+
+    apply(anim => updateAnimation(dt * 3, anim), this.explosions)
+    sweep(isAnimationExpired, this.explosions)
   }
 
   pointerdown(event: pixi.interaction.InteractionEvent) {
