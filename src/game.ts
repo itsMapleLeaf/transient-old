@@ -1,4 +1,5 @@
 import * as pixi from 'pixi.js'
+import * as util from './util'
 
 export const viewWidth = 540
 export const viewHeight = 960
@@ -12,187 +13,158 @@ enum NoteState {
   holding,
 }
 
-interface Note {
-  time: number
-  position: number
-  state: NoteState
+class Song {
+  time = -2
+
+  update(dt: number) {
+    this.time += dt
+  }
 }
 
-interface Animation {
-  time: number
+class NoteData {
+  constructor(public time: number, public position: number) {}
 }
 
-interface NoteExplosion extends Animation {
-  x: number
-  y: number
+class Background extends pixi.Sprite {
+  constructor() {
+    super(pixi.loader.resources['background'].texture)
+  }
 }
 
-function createNote(time: number, position: number): Note {
-  return { time, position, state: NoteState.active }
+class Note extends pixi.Sprite {
+  state = NoteState.active
+
+  constructor(public data: NoteData) {
+    super(pixi.loader.resources['note'].texture)
+
+    this.x = util.lerp(110, viewWidth - 110, data.position)
+    this.y = receptorPosition - data.time * noteSpacing
+    this.pivot.set(this.width / 2, this.height / 2)
+
+    this.on('added', () => {
+      const parent = this.parent
+      parent.on('update', this.update, this)
+      this.on('removed', () => {
+        parent.off('update', this.update)
+      })
+    })
+  }
+
+  update(dt: number, song: Song) {
+    if (this.state !== NoteState.active) this.alpha = 0
+    this.y = receptorPosition - (this.data.time - song.time) * noteSpacing
+  }
 }
 
-function createNoteExplosion(x: number, y: number): NoteExplosion {
-  return { x, y, time: 0 }
-}
+class Receptor extends pixi.Sprite {
+  constructor(public note: Note) {
+    super(pixi.loader.resources['receptor'].texture)
 
-function createSprite(textureName: string, x = 0, y = 0) {
-  const sprite = new pixi.Sprite(pixi.loader.resources[textureName].texture)
-  sprite.position.set(x, y)
-  pivotToCenter(sprite)
-  return sprite
-}
+    this.x = note.x
+    this.y = receptorPosition
+    this.pivot.set(this.width / 2, this.height / 2)
 
-function createBackgroundSprite() {
-  return createSprite('background', viewWidth / 2, viewHeight / 2)
-}
+    this.on('added', () => {
+      const parent = this.parent
+      parent.on('update', this.update, this)
+      this.on('removed', () => {
+        parent.off('update', this.update)
+      })
+    })
+  }
 
-function createNoteSprite(x: number, y: number) {
-  return createSprite('note', x, y)
-}
-
-function createReceptorSprite(x: number, y: number, alpha: number) {
-  const sprite = createSprite('receptor', x, y)
-  sprite.alpha = alpha
-  return sprite
-}
-
-function createExplosionSprite(x: number, y: number) {
-  return createSprite('explosion', x, y)
-}
-
-function pivotToCenter(sprite: pixi.Sprite) {
-  sprite.pivot.set(sprite.width / 2, sprite.height / 2)
-  return sprite
-}
-
-function getScreenPosition(note: Note) {
-  const x = 110 + note.position * (viewWidth - 220)
-  const y = note.time * -noteSpacing
-  return new pixi.Point(x, y)
-}
-
-function getTrackOffset(songTime: number) {
-  return receptorPosition + songTime * noteSpacing
-}
-
-function setSpritePosition(x: number, y: number, sprite: pixi.DisplayObject) {
-  sprite.position.set(x, y)
-}
-
-function updateAnimation(dt: number, anim: Animation) {
-  anim.time += dt
-}
-
-function isAnimationExpired(anim: Animation) {
-  return anim.time > 1
-}
-
-function apply<T>(action: (item: T) => any, items: T[]) {
-  items.forEach(action)
-}
-
-function sweep<T>(clause: (item: T) => boolean, items: T[]) {
-  for (let i = items.length - 1; i >= 0; i--) {
-    const item = items[i]
-    if (clause(item)) {
-      items.splice(i, 1)
+  update(dt: number, song: Song) {
+    if (this.note.y < this.y && this.note.state === NoteState.active) {
+      this.visible = true
+      this.alpha = 1 - Math.abs(this.note.y - this.y) / 400
+    } else {
+      this.visible = false
     }
   }
 }
 
-function renderReceptor(songTime: number, note: Note) {
-  const pos = getScreenPosition(note)
-  if (pos.y + getTrackOffset(songTime) < receptorPosition && note.state === NoteState.active) {
-    const alpha = 1 - Math.abs(songTime - note.time)
-    return createReceptorSprite(pos.x, receptorPosition, alpha)
+class NoteExplosion extends pixi.Sprite {
+  time = 0
+
+  constructor(public startX: number, public startY: number) {
+    super(pixi.loader.resources['explosion'].texture)
+
+    this.x = startX
+    this.y = startY
+    this.pivot.set(this.width / 2, this.height / 2)
+
+    this.on('added', () => {
+      const parent = this.parent
+      parent.on('update', this.update, this)
+      this.on('removed', () => {
+        parent.off('update', this.update)
+      })
+    })
   }
-  return null
-}
 
-function renderNote(note: Note) {
-  if (note.state === NoteState.active) {
-    const pos = getScreenPosition(note)
-    return createNoteSprite(pos.x, pos.y)
-  }
-  return null
-}
-
-function renderNoteExplosion(anim: NoteExplosion) {
-  const sprite = createExplosionSprite(anim.x, anim.y)
-  sprite.y += anim.time ** 2.5 * 80
-  sprite.alpha = 1 - anim.time
-  return sprite
-}
-
-function renderCollection<T>(items: T[], renderer: (item: T) => pixi.DisplayObject | null, subject: pixi.Container) {
-  subject.removeChildren()
-  items.forEach(item => {
-    const sprite = renderer(item)
-    if (sprite) subject.addChild(sprite)
-  })
-}
-
-function tryTapNote(notes: Note[], songTime: number, touch: pixi.Point) {
-  for (const note of notes) {
-    const pos = getScreenPosition(note)
-    const isActive = note.state === NoteState.active
-    const touchDistance = Math.abs(pos.x - touch.x)
-    const touchTiming = Math.abs(songTime - note.time)
-    if (isActive && touchDistance < 80 && touchTiming < 0.25) {
-      note.state = NoteState.hit
-      return note
+  update(dt: number, song: Song) {
+    this.time += dt * 3
+    if (this.time < 1) {
+      this.alpha = 1 - this.time
+      this.y = this.startY + this.time ** 2.5 * 80
+    } else {
+      this.destroy()
     }
   }
-  return null
 }
 
 export default class Game {
-  notes = [
-    createNote(0 / 2, 0 / 4),
-    createNote(1 / 2, 1 / 4),
-    createNote(2 / 2, 2 / 4),
-    createNote(3 / 2, 3 / 4),
-    createNote(4 / 2, 4 / 4),
-  ]
-
-  explosions = [] as NoteExplosion[]
-
+  song = new Song()
   stage = new pixi.Container()
-  noteContainer = new pixi.Container()
-  receptorContainer = new pixi.Container()
-  explosionContainer = new pixi.Container()
-  backgroundSprite = createBackgroundSprite()
-
-  songTime = -2
+  notes = new pixi.Container()
 
   constructor() {
-    this.stage.addChild(this.backgroundSprite)
-    this.stage.addChild(this.receptorContainer)
-    this.stage.addChild(this.explosionContainer)
-    this.stage.addChild(this.noteContainer)
+    const notes = [
+      new NoteData(0 / 2, 0 / 4),
+      new NoteData(1 / 2, 1 / 4),
+      new NoteData(2 / 2, 2 / 4),
+      new NoteData(3 / 2, 3 / 4),
+      new NoteData(4 / 2, 4 / 4),
+    ]
+
+    this.stage.addChild(new Background())
+
+    for (const data of notes) {
+      const note = new Note(data)
+      this.stage.addChild(new Receptor(note))
+      this.notes.addChild(note)
+    }
+
+    this.stage.addChild(this.notes)
   }
 
   update(dt: number) {
-    this.songTime += dt
-
-    setSpritePosition(0, getTrackOffset(this.songTime), this.noteContainer)
-
-    apply(anim => updateAnimation(dt * 3, anim), this.explosions)
-    sweep(isAnimationExpired, this.explosions)
+    this.song.update(dt)
+    this.stage.emit('update', dt, this.song)
+    this.notes.emit('update', dt, this.song)
   }
 
   pointerdown(event: pixi.interaction.InteractionEvent) {
-    const note = tryTapNote(this.notes, this.songTime, event.data.global)
+    const note = this.tryTapNote(event.data.global)
     if (note) {
-      const pos = getScreenPosition(note)
-      this.explosions.push(createNoteExplosion(pos.x, receptorPosition))
+      this.stage.addChild(new NoteExplosion(note.x, receptorPosition))
     }
   }
 
+  tryTapNote(touch: pixi.Point) {
+    for (const note of this.notes.children as Note[]) {
+      const isActive = note.state === NoteState.active
+      const touchDistance = Math.abs(note.x - touch.x)
+      const touchTiming = Math.abs(this.song.time - note.data.time)
+      if (isActive && touchDistance < 80 && touchTiming < 0.25) {
+        note.state = NoteState.hit
+        return note
+      }
+    }
+    return null
+  }
+
   draw(renderer: pixi.SystemRenderer) {
-    renderCollection(this.notes, renderNote, this.noteContainer)
-    renderCollection(this.explosions, renderNoteExplosion, this.explosionContainer)
-    renderCollection(this.notes, rec => renderReceptor(this.songTime, rec), this.receptorContainer)
     renderer.render(this.stage)
   }
 }
