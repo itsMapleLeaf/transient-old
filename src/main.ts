@@ -3,7 +3,10 @@ import Game, {viewWidth, viewHeight} from './game'
 
 function startGame() {
   const canvas = document.querySelector('canvas') as HTMLCanvasElement
+
   const renderer = pixi.autoDetectRenderer(viewWidth, viewHeight, { view: canvas })
+  renderer.clearBeforeRender = false
+
   const interaction = new pixi.interaction.InteractionManager(renderer)
 
   const game = new Game()
@@ -12,7 +15,6 @@ function startGame() {
   window.requestAnimationFrame(function gameloop(now) {
     const dt = (now - time) / 1000
     time = now
-
     game.update(dt)
     game.draw(renderer)
     window.requestAnimationFrame(gameloop)
