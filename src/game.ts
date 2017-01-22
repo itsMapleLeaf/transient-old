@@ -110,33 +110,33 @@ export default class Game {
   }
 
   draw(renderer: pixi.SystemRenderer) {
+    function renderList(list: pixi.DisplayObject[]) {
+      list.forEach(sprite => renderer.render(sprite))
+    }
+
     renderer.clearBeforeRender = false
     renderer.render(renderBackground())
-    this.renderReceptors(renderer)
-    this.renderExplosions(renderer)
-    this.renderNotes(renderer)
-    // renderer.render(this.stage)
+    renderList(this.renderReceptors())
+    renderList(this.renderExplosions())
+    renderList(this.renderNotes())
   }
 
-  renderNotes(renderer: pixi.SystemRenderer) {
-    this.notes
+  renderNotes() {
+    return this.notes
       .filter(note => note.state === NoteState.active)
       .map(note => note.render())
-      .forEach(sprite => renderer.render(sprite))
   }
 
-  renderReceptors(renderer: pixi.SystemRenderer) {
-    this.notes
+  renderReceptors() {
+    return this.notes
       .filter(note => note.state === NoteState.active)
       .filter(note => this.song.time < note.time)
       .map(note => new Receptor(note, this.song.time).render())
-      .forEach(sprite => renderer.render(sprite))
   }
 
-  renderExplosions(renderer: pixi.SystemRenderer) {
-    this.explosions
+  renderExplosions() {
+    return this.explosions
       .map(exp => exp.render())
-      .forEach(sprite => renderer.render(sprite))
   }
 
   tryTapNote(touch: pixi.Point) {
