@@ -106,7 +106,7 @@ function renderReceptor(songTime: number, note: Note) {
     const alpha = 1 - Math.abs(songTime - note.time)
     return createReceptorSprite(pos.x, receptorPosition, alpha)
   }
-  return undefined
+  return null
 }
 
 function renderNote(note: Note) {
@@ -114,7 +114,7 @@ function renderNote(note: Note) {
     const pos = getScreenPosition(note)
     return createNoteSprite(pos.x, pos.y)
   }
-  return undefined
+  return null
 }
 
 function renderNoteExplosion(anim: NoteExplosion) {
@@ -124,7 +124,7 @@ function renderNoteExplosion(anim: NoteExplosion) {
   return sprite
 }
 
-function renderCollection<T>(items: T[], renderer: (item: T) => pixi.DisplayObject | void, subject: pixi.Container) {
+function renderCollection<T>(items: T[], renderer: (item: T) => pixi.DisplayObject | null, subject: pixi.Container) {
   subject.removeChildren()
   items.forEach(item => {
     const sprite = renderer(item)
