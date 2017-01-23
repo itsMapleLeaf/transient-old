@@ -236,8 +236,12 @@ export default class Game {
   pointerdown(event: pixi.interaction.InteractionEvent) {
     this.tryTapNote(event.data.global, (note, timing) => {
       this.explosions.addChild(new NoteExplosionSprite(note.screenPosition.x, receptorPosition))
-      this.judgement.playJudgement(judgeTiming(timing))
-      this.combo.add(1)
+
+      const judgement = judgeTiming(timing)
+      this.judgement.playJudgement(judgement)
+      if (judgement < Judgement.bad) {
+        this.combo.add(1)
+      }
     })
   }
 
