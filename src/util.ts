@@ -15,9 +15,3 @@ export function clamp(n: number, min: number, max: number) {
     : n < min ? min
     : n
 }
-
-export function animationFrame(): Promise<number> {
-  return new Promise((resolve, reject) => {
-    window.requestAnimationFrame(resolve)
-  })
-}
