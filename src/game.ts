@@ -1,5 +1,7 @@
 import * as pixi from 'pixi.js'
 import * as util from './util'
+import * as songman from './song-manager'
+import {Howl} from 'howler'
 
 export const viewWidth = 540
 export const viewHeight = 960
@@ -55,13 +57,15 @@ class Note {
 
 class Song {
   time = -2
-  notes = [
-    new Note(0 / 2, 0 / 4),
-    new Note(1 / 2, 1 / 4),
-    new Note(2 / 2, 2 / 4),
-    new Note(3 / 2, 3 / 4),
-    new Note(4 / 2, 4 / 4),
-  ]
+  notes = [] as Note[]
+  audio: Howl
+
+  constructor(name: string) {
+    const data = songman.getSong(name)
+    this.notes = data.notes.map(([time, position]) => new Note(time, position))
+    this.audio = songman.loadSongAudio(data)
+    this.audio.on('load', () => this.audio.play())
+  }
 }
 
 class NoteSprite extends pixi.Sprite {
@@ -197,7 +201,7 @@ class ComboSprite extends pixi.Text implements Updateable {
 }
 
 export default class Game {
-  song = new Song()
+  song = new Song('frigid')
 
   stage = new pixi.Container()
   receptors = this.stage.addChild(new pixi.Container())
