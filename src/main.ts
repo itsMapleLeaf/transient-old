@@ -2,6 +2,17 @@ import * as pixi from 'pixi.js'
 import * as WebFontLoader from 'webfontloader'
 import Game, {viewWidth, viewHeight} from './game'
 
+type SongData = {
+  title: string
+  artist: string
+  art: string
+  offset: number
+  audio: string[]
+  notes: [number, number][]
+}
+
+declare var require: any
+
 function animationFrame(): Promise<number> {
   return new Promise((resolve, reject) => {
     window.requestAnimationFrame(resolve)
@@ -31,6 +42,14 @@ function loadFonts() {
   })
 }
 
+function loadSongs() {
+  const context = require.context('../songs', true, /song\.yaml/)
+  for (const file of context.keys() as string[]) {
+    const data = context(file)
+    console.log(data)
+  }
+}
+
 async function startGame() {
   const canvas = document.querySelector('canvas') as HTMLCanvasElement
   const renderer = pixi.autoDetectRenderer(viewWidth, viewHeight, { view: canvas })
@@ -52,6 +71,7 @@ async function startGame() {
 async function main() {
   await loadImages()
   await loadFonts()
+  await loadSongs()
   await startGame()
 }
 
