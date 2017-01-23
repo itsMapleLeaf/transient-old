@@ -39,10 +39,6 @@ function judgeTiming(timing: number) {
   )
 }
 
-interface Updateable {
-  update(dt: number): void
-}
-
 class Note {
   state = NoteState.active
 
@@ -102,7 +98,7 @@ class NoteSprite extends pixi.Sprite {
   }
 }
 
-class NoteExplosionSprite extends pixi.Sprite implements Updateable {
+class NoteExplosionSprite extends pixi.Sprite {
   time = 0
   origin = new pixi.Point()
 
@@ -124,7 +120,7 @@ class NoteExplosionSprite extends pixi.Sprite implements Updateable {
   }
 }
 
-class ReceptorSprite extends pixi.Sprite implements Updateable {
+class ReceptorSprite extends pixi.Sprite {
   constructor(public note: Note, public song: Song) {
     super(getTexture('receptor'))
     this.position.set(note.screenPosition.x, receptorPosition)
@@ -140,7 +136,7 @@ class ReceptorSprite extends pixi.Sprite implements Updateable {
   }
 }
 
-class JudgementSprite extends pixi.Text implements Updateable {
+class JudgementSprite extends pixi.Text {
   judgement = Judgement.none
   time = 0
 
@@ -192,7 +188,7 @@ class JudgementSprite extends pixi.Text implements Updateable {
   }
 }
 
-class ComboSprite extends pixi.Text implements Updateable {
+class ComboSprite extends pixi.Text {
   combo = 0
   time = 0
 
