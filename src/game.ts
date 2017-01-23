@@ -58,13 +58,39 @@ class Note {
 class Song {
   time = -2
   notes = [] as Note[]
-  audio: Howl
+  playing = false
+  data: songman.SongData
 
   constructor(name: string) {
-    const data = songman.getSong(name)
-    this.notes = data.notes.map(([time, position]) => new Note(time, position))
-    this.audio = songman.loadSongAudio(data)
-    this.audio.on('load', () => this.audio.play())
+    this.data = songman.getSong(name)
+    this.notes = this.data.notes.map(([time, position]) => new Note(time, position))
+  }
+
+  update(dt: number) {
+    if (this.playing) {
+      this.time += dt
+    }
+  }
+
+  loadAudio(): Promise<Howl> {
+    const audio = songman.loadSongAudio(this.data)
+    return new Promise((resolve, reject) => {
+      audio.on('load', () => resolve(audio))
+      audio.on('loaderror', reject)
+    })
+  }
+
+  loadArt(): Promise<pixi.Sprite> {
+    const loader = new pixi.loaders.Loader().add('art', this.data.art).load()
+    return new Promise((resolve, reject) => {
+      loader.on('complete', () => {
+        const sprite = new pixi.Sprite(loader.resources['art'].texture)
+        sprite.pivot.set(sprite.width / 2, sprite.height / 2)
+        sprite.position.set(viewWidth / 2, viewHeight / 2)
+        resolve(sprite)
+      })
+      loader.on('error', reject)
+    })
   }
 }
 
@@ -202,24 +228,40 @@ class ComboSprite extends pixi.Text implements Updateable {
 
 export default class Game {
   song = new Song('frigid')
+  audio: Howl
 
   stage = new pixi.Container()
-  receptors = this.stage.addChild(new pixi.Container())
-  explosions = this.stage.addChild(new pixi.Container())
-  notes = this.stage.addChild(new pixi.Container())
-  judgement = this.stage.addChild(new JudgementSprite())
-  combo = this.stage.addChild(new ComboSprite())
+  receptors = new pixi.Container()
+  explosions = new pixi.Container()
+  notes = new pixi.Container()
+  judgement = new JudgementSprite()
+  combo = new ComboSprite()
 
   constructor() {
+    this.init()
+  }
+
+  async init() {
+    this.audio = await this.song.loadAudio()
+
+    this.stage.addChild(await this.song.loadArt())
     this.stage.addChild(new pixi.Sprite(getTexture('background')))
+    this.stage.addChild(this.receptors)
+    this.stage.addChild(this.explosions)
+    this.stage.addChild(this.notes)
+    this.stage.addChild(this.combo)
+    this.stage.addChild(this.judgement)
+
     for (const note of this.song.notes) {
       this.notes.addChild(new NoteSprite(note))
       this.receptors.addChild(new ReceptorSprite(note, this.song))
     }
+
+    this.song.playing = true
   }
 
   update(dt: number) {
-    this.song.time += dt
+    this.song.update(dt)
     this.notes.y = this.song.time * noteSpacing
     this.judgement.update(dt)
     this.combo.update(dt)

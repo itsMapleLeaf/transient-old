@@ -3,7 +3,7 @@ import {Howl} from 'howler'
 
 declare var require: any
 
-type SongData = {
+export type SongData = {
   title: string
   artist: string
   art: string
