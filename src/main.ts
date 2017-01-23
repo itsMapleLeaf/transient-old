@@ -1,6 +1,6 @@
 import * as pixi from 'pixi.js'
-import * as WebFontLoader from 'webfontloader'
 import * as songman from './song-manager'
+import * as WebFontLoader from 'webfontloader'
 import Game, {viewWidth, viewHeight} from './game'
 
 function animationFrame(): Promise<number> {
@@ -10,10 +10,10 @@ function animationFrame(): Promise<number> {
 }
 
 function loadImages() {
-  pixi.loader.add('note', require('../assets/images/note.svg'))
-  pixi.loader.add('background', require('../assets/images/background.svg'))
-  pixi.loader.add('receptor', require('../assets/images/receptor.svg'))
-  pixi.loader.add('explosion', require('../assets/images/explosion.svg'))
+  pixi.loader.add('note', require('../assets/note.svg'))
+  pixi.loader.add('background', require('../assets/background.svg'))
+  pixi.loader.add('receptor', require('../assets/receptor.svg'))
+  pixi.loader.add('explosion', require('../assets/explosion.svg'))
 
   return new Promise((resolve, reject) => {
     pixi.loader.load()

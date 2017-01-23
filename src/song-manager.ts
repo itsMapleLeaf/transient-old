@@ -10,7 +10,6 @@ type SongData = {
   offset: number
   audio: string[]
   notes: [number, number][]
-  path: string
 }
 
 type SongRegistry = {
@@ -18,15 +17,30 @@ type SongRegistry = {
 }
 
 const songs = {} as SongRegistry
+// const songsFolder = './songs'
+
+// function loadSong(name: string, art: string, audio: string[]) {
+//   const data = require(path.join(songsFolder, name, 'song.yaml')) as SongData
+//   data.art = require(path.join(songsFolder, name, art))
+//   data.audio = audio.map(file => require(path.join(songsFolder, name, file)))
+// }
 
 export function loadSongs() {
   const context = require.context('../songs', true, /song\.yaml/)
   for (const file of context.keys() as string[]) {
-    const data = context(file) as SongData
-    const folder = path.dirname(file)
-    const name = path.basename(folder)
-    data.path = path.join('../songs', folder)
-    songs[name] = data
+    const data = context(file)
+    const name = path.basename(path.dirname(file))
+
+    const song: SongData = {
+      title: data.title,
+      artist: data.artist,
+      art: path.join('songs', name, data.art),
+      offset: data.offset,
+      audio: data.audio.map((file: string) => path.join('songs', name, file)),
+      notes: data.notes
+    }
+
+    songs[name] = song
   }
 
   console.log(songs)
@@ -42,6 +56,6 @@ export function getSong(name: string) {
 
 export function loadSongAudio(song: SongData) {
   return new Howl({
-    src: song.audio.map(file => require(path.join(song.path, file)))
+    src: song.audio
   })
 }

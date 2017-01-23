@@ -1,5 +1,4 @@
 const path = require('path')
-const HtmlPlugin = require('html-webpack-plugin')
 
 module.exports = {
   entry: './src/main.ts',
@@ -15,9 +14,7 @@ module.exports = {
       { test: /\.(svg|png|mp3|ogg)$/, loader: 'file-loader' },
     ]
   },
-  plugins: [
-    new HtmlPlugin({ template: './assets/index.html' })
-  ],
+  plugins: [],
   resolve: {
     extensions: ['.js', '.ts', '.json']
   },
