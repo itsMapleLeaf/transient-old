@@ -36,6 +36,10 @@ function judgeTiming(timing: number) {
   )
 }
 
+interface Updateable {
+  update(dt: number): void
+}
+
 class Note {
   state = NoteState.active
 
@@ -67,7 +71,7 @@ class NoteSprite extends pixi.Sprite {
   }
 }
 
-class NoteExplosionSprite extends pixi.Sprite {
+class NoteExplosionSprite extends pixi.Sprite implements Updateable {
   time = 0
   origin = new pixi.Point()
 
@@ -89,7 +93,7 @@ class NoteExplosionSprite extends pixi.Sprite {
   }
 }
 
-class ReceptorSprite extends pixi.Sprite {
+class ReceptorSprite extends pixi.Sprite implements Updateable {
   constructor(public note: Note, public song: Song) {
     super(getTexture('receptor'))
     this.position.set(note.screenPosition.x, receptorPosition)
@@ -105,7 +109,7 @@ class ReceptorSprite extends pixi.Sprite {
   }
 }
 
-class JudgementSprite extends pixi.Text {
+class JudgementSprite extends pixi.Text implements Updateable {
   judgement = Judgement.none
   time = 0
 
@@ -182,9 +186,13 @@ export default class Game {
   update(dt: number) {
     this.song.time += dt
     this.notes.y = this.song.time * noteSpacing
-    this.explosions.children.forEach(anim => (anim as NoteExplosionSprite).update(dt))
-    this.receptors.children.forEach(rec => (rec as ReceptorSprite).update())
     this.judgement.update(dt)
+    for (const exp of this.explosions.children as NoteExplosionSprite[]) exp.update(dt)
+    for (const rec of this.receptors.children as ReceptorSprite[]) rec.update()
+  }
+
+  draw(renderer: pixi.SystemRenderer) {
+    renderer.render(this.stage)
   }
 
   pointerdown(event: pixi.interaction.InteractionEvent) {
@@ -192,10 +200,6 @@ export default class Game {
       this.explosions.addChild(new NoteExplosionSprite(note.screenPosition.x, receptorPosition))
       this.judgement.playJudgement(judgeTiming(timing))
     })
-  }
-
-  draw(renderer: pixi.SystemRenderer) {
-    renderer.render(this.stage)
   }
 
   tryTapNote(touch: pixi.Point, callback: (note: Note, timing: number) => any) {
