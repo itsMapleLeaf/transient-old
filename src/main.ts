@@ -52,7 +52,7 @@ async function startGame() {
 async function main() {
   await loadImages()
   await loadFonts()
-  startGame()
+  await startGame()
 }
 
 main().catch(err => console.error(err))
