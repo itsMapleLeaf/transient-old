@@ -19,6 +19,7 @@ enum Judgement {
   great,
   bad,
   none,
+  // TODO: account for misses
 }
 
 function getTexture(name: string) {
@@ -161,6 +162,40 @@ class JudgementSprite extends pixi.Text implements Updateable {
   }
 }
 
+class ComboSprite extends pixi.Text implements Updateable {
+  combo = 0
+  time = 0
+
+  constructor() {
+    super('', {
+      fontFamily: 'Teko',
+      fontSize: 120,
+      fill: 'white'
+    })
+    this.position.set(viewWidth / 2, viewHeight * 0.2)
+  }
+
+  update(dt: number) {
+    this.time += dt
+    if (this.combo > 0) {
+      this.alpha = util.lerp(1, 0.5, util.clamp(util.delta(this.time, 0, 0.3), 0, 1))
+    } else {
+      this.alpha = 0
+    }
+    this.text = this.combo.toString()
+    this.pivot.x = this.width / 2
+  }
+
+  add(combo: number) {
+    this.combo += combo
+    this.time = 0
+  }
+
+  reset() {
+    this.combo = 0
+  }
+}
+
 export default class Game {
   song = new Song()
 
@@ -169,6 +204,7 @@ export default class Game {
   explosions = new pixi.Container()
   notes = new pixi.Container()
   judgement = new JudgementSprite()
+  combo = new ComboSprite()
 
   constructor() {
     this.stage.addChild(new pixi.Sprite(getTexture('background')))
@@ -176,6 +212,7 @@ export default class Game {
     this.stage.addChild(this.explosions)
     this.stage.addChild(this.notes)
     this.stage.addChild(this.judgement)
+    this.stage.addChild(this.combo)
 
     for (const note of this.song.notes) {
       this.notes.addChild(new NoteSprite(note))
@@ -187,6 +224,7 @@ export default class Game {
     this.song.time += dt
     this.notes.y = this.song.time * noteSpacing
     this.judgement.update(dt)
+    this.combo.update(dt)
     for (const exp of this.explosions.children as NoteExplosionSprite[]) exp.update(dt)
     for (const rec of this.receptors.children as ReceptorSprite[]) rec.update()
   }
@@ -199,6 +237,7 @@ export default class Game {
     this.tryTapNote(event.data.global, (note, timing) => {
       this.explosions.addChild(new NoteExplosionSprite(note.screenPosition.x, receptorPosition))
       this.judgement.playJudgement(judgeTiming(timing))
+      this.combo.add(1)
     })
   }
 
