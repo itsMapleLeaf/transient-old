@@ -6,15 +6,34 @@ export const viewHeight = 960
 export const receptorPosition = viewHeight * 0.889
 export const noteSpacing = 300
 
-function getTexture(name: string) {
-  return pixi.loader.resources[name].texture
-}
-
 enum NoteState {
   active,
   hit,
   missed,
   holding,
+}
+
+enum Judgement {
+  absolute,
+  perfect,
+  great,
+  bad,
+  none,
+}
+
+function getTexture(name: string) {
+  return pixi.loader.resources[name].texture
+}
+
+function judgeTiming(timing: number) {
+  timing = Math.abs(timing)
+  return (
+    timing <= 0.02 ? Judgement.absolute :
+    timing <= 0.08 ? Judgement.perfect :
+    timing <= 0.12 ? Judgement.great :
+    timing <= 0.25 ? Judgement.bad :
+    Judgement.none
+  )
 }
 
 class Note {
@@ -86,6 +105,58 @@ class ReceptorSprite extends pixi.Sprite {
   }
 }
 
+class JudgementSprite extends pixi.Text {
+  judgement = Judgement.none
+  time = 0
+
+  constructor() {
+    super('', {
+      fontFamily: 'Teko',
+      fontSize: 100,
+    })
+
+    this.position.set(viewWidth / 2, viewHeight * 0.35)
+  }
+
+  update(dt: number) {
+    this.time += dt
+
+    this.text =
+      this.judgement === Judgement.absolute ? 'ABSOLUTE' :
+      this.judgement === Judgement.perfect ? 'PERFECT' :
+      this.judgement === Judgement.great ? 'GREAT' :
+      this.judgement === Judgement.bad ? 'BAD' :
+      ''
+
+    this.style.fill =
+      this.judgement === Judgement.absolute ? 'rgb(52, 152, 219)' :
+      this.judgement === Judgement.perfect ? 'rgb(241, 196, 15)' :
+      this.judgement === Judgement.great ? 'rgb(46, 204, 113)' :
+      this.judgement === Judgement.bad ? 'rgb(231, 76, 60)' :
+      ''
+
+    if (this.judgement < Judgement.bad) {
+      this.alpha = 1 - util.delta(this.time, 0.8, 1)
+      if (this.judgement === Judgement.absolute) {
+        this.alpha *= util.lerp(0.3, 1, Math.sin(this.time * 100) / 2 + 0.5)
+      }
+
+      const bounce = 1 - util.clamp(util.delta(this.time, 0, 0.3), 0, 1) ** 0.3 * 25
+      this.y = viewHeight * 0.35 + bounce
+    } else {
+      this.alpha = util.lerp(1, 0, util.clamp(util.delta(this.time, 0.5, 1), 0, 1))
+      this.y = viewHeight * 0.35 + util.lerp(0, 40, util.clamp(util.delta(this.time, 0, 1), 0, 1))
+    }
+
+    this.pivot.x = this.width / 2
+  }
+
+  playJudgement(judgement: Judgement) {
+    this.judgement = judgement
+    this.time = 0
+  }
+}
+
 export default class Game {
   song = new Song()
 
@@ -93,12 +164,14 @@ export default class Game {
   receptors = new pixi.Container()
   explosions = new pixi.Container()
   notes = new pixi.Container()
+  judgement = new JudgementSprite()
 
   constructor() {
     this.stage.addChild(new pixi.Sprite(getTexture('background')))
     this.stage.addChild(this.receptors)
     this.stage.addChild(this.explosions)
     this.stage.addChild(this.notes)
+    this.stage.addChild(this.judgement)
 
     for (const note of this.song.notes) {
       this.notes.addChild(new NoteSprite(note))
@@ -111,20 +184,21 @@ export default class Game {
     this.notes.y = this.song.time * noteSpacing
     this.explosions.children.forEach(anim => (anim as NoteExplosionSprite).update(dt))
     this.receptors.children.forEach(rec => (rec as ReceptorSprite).update())
+    this.judgement.update(dt)
   }
 
   pointerdown(event: pixi.interaction.InteractionEvent) {
-    const note = this.tryTapNote(event.data.global)
-    if (note) {
+    this.tryTapNote(event.data.global, (note, timing) => {
       this.explosions.addChild(new NoteExplosionSprite(note.screenPosition.x, receptorPosition))
-    }
+      this.judgement.playJudgement(judgeTiming(timing))
+    })
   }
 
   draw(renderer: pixi.SystemRenderer) {
     renderer.render(this.stage)
   }
 
-  tryTapNote(touch: pixi.Point) {
+  tryTapNote(touch: pixi.Point, callback: (note: Note, timing: number) => any) {
     for (const sprite of this.notes.children as NoteSprite[]) {
       const note = sprite.note
 
@@ -135,9 +209,9 @@ export default class Game {
       if (isActive && touchDistance < 80 && touchTiming < 0.25) {
         note.state = NoteState.hit
         sprite.destroy()
-        return note
+        callback(note, touchTiming)
+        break
       }
     }
-    return null
   }
 }
