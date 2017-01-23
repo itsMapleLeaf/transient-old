@@ -200,20 +200,14 @@ export default class Game {
   song = new Song()
 
   stage = new pixi.Container()
-  receptors = new pixi.Container()
-  explosions = new pixi.Container()
-  notes = new pixi.Container()
-  judgement = new JudgementSprite()
-  combo = new ComboSprite()
+  receptors = this.stage.addChild(new pixi.Container())
+  explosions = this.stage.addChild(new pixi.Container())
+  notes = this.stage.addChild(new pixi.Container())
+  judgement = this.stage.addChild(new JudgementSprite())
+  combo = this.stage.addChild(new ComboSprite())
 
   constructor() {
     this.stage.addChild(new pixi.Sprite(getTexture('background')))
-    this.stage.addChild(this.receptors)
-    this.stage.addChild(this.explosions)
-    this.stage.addChild(this.notes)
-    this.stage.addChild(this.judgement)
-    this.stage.addChild(this.combo)
-
     for (const note of this.song.notes) {
       this.notes.addChild(new NoteSprite(note))
       this.receptors.addChild(new ReceptorSprite(note, this.song))
