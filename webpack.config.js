@@ -10,10 +10,17 @@ module.exports = {
   },
   module: {
     rules: [
-      { test: /\.ts$/, loader: 'ts-loader' },
-      { test: /\.json$/, loader: 'json-loader' },
-      { test: /\.yaml$/, loader: 'json-loader!yaml-loader' },
-      { test: /\.(svg|png|mp3|ogg)$/, loader: 'file-loader' },
+      {
+        test: /\.ts$/,
+        loader: 'ts-loader'
+      },
+      {
+        test: /\.(svg|png|mp3|ogg)$/,
+        loader: 'file-loader',
+        options: {
+          name: '[name].[hash].[ext]'
+        }
+      },
     ]
   },
   plugins: [
