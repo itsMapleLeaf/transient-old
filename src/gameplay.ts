@@ -58,9 +58,9 @@ export class GameplayState implements GameState {
 
   enter() {
     const song = songman.loadSong('frigid')
-    for (const [time, position] of song.notes) {
-      const note = this.notes.addChild(new NoteSprite(new NoteData(time, position)))
-      this.receptors.addChild(new ReceptorSprite(note.x, receptorPosition, time))
+    for (const note of song.notes) {
+      const noteSprite = this.notes.addChild(new NoteSprite(note))
+      this.receptors.addChild(new ReceptorSprite(noteSprite.x, receptorPosition, note.time))
     }
 
     // insert containers manually to ensure proper draw order
@@ -126,15 +126,11 @@ export class GameplayState implements GameState {
   }
 }
 
-class NoteData {
-  constructor(public time: number, public position: number) {}
-}
-
 class NoteSprite extends pixi.Sprite {
   time = 0
   state = NoteState.active
 
-  constructor(data: NoteData) {
+  constructor(data: songman.NoteData) {
     super(getTexture('note'))
     this.position.x = util.lerp(110, viewWidth - 110, data.position)
     this.position.y = receptorPosition + data.time * -noteSpacing
