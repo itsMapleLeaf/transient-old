@@ -1,4 +1,5 @@
-import {loadImages, loadFonts, Game} from './game'
+import {loadImages, loadFonts} from './resources'
+import {Game} from './game'
 import {GameplayState} from './gameplay'
 
 async function main() {

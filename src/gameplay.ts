@@ -84,8 +84,13 @@ export class GameplayState implements GameState {
 
     this.judgement.update(dt)
     this.combo.update(dt)
-    for (const exp of this.explosions.children as NoteExplosionSprite[]) exp.update(dt)
-    for (const rec of this.receptors.children as ReceptorSprite[]) rec.update(this.songTime)
+
+    for (const exp of this.explosions.children as NoteExplosionSprite[]) {
+      exp.update(dt)
+    }
+    for (const rec of this.receptors.children as ReceptorSprite[]) {
+      rec.update(this.songTime)
+    }
   }
 
   render(renderer: pixi.SystemRenderer) {
@@ -94,9 +99,8 @@ export class GameplayState implements GameState {
 
   pointerdown(event: pixi.interaction.InteractionEvent) {
     this.tryTapNote(event.data.global, (note, timing) => {
-      this.explosions.addChild(new NoteExplosionSprite(note.x, receptorPosition))
-
       const judgement = judgeTiming(timing)
+      this.explosions.addChild(new NoteExplosionSprite(note.x, receptorPosition))
       this.judgement.playJudgement(judgement)
       if (judgement < Judgement.bad) {
         this.combo.add(1)
