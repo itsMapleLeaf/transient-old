@@ -3,15 +3,6 @@ import {Howl} from 'howler'
 
 declare var require: any
 
-export type SongData = {
-  title: string
-  artist: string
-  art: string
-  offset: number
-  audio: string[]
-  notes: NoteData[]
-}
-
 export type NoteData = {
   time: number
   position: number
