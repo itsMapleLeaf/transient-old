@@ -38,7 +38,7 @@ class Game {
   }
 }
 
-export interface GameState {
+interface GameState {
   enter(): void
   leave(): void
   update(dt: number): void
@@ -49,4 +49,11 @@ export interface GameState {
 }
 
 // use game as a singleton, to make state switching easier
-export const game = new Game()
+const game = new Game()
+
+export {
+  GameState,
+  game,
+  viewWidth,
+  viewHeight,
+}

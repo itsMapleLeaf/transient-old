@@ -1,5 +1,5 @@
 import * as pixi from 'pixi.js'
-import * as gameplay from './gameplay'
+import * as game from './game'
 import * as util from './util'
 
 const timingAbsolute = 0.02
@@ -53,7 +53,7 @@ class JudgementSprite extends pixi.Text {
       fontSize: 100,
     })
 
-    this.position.set(gameplay.viewWidth / 2, gameplay.viewHeight * 0.35)
+    this.position.set(game.viewWidth / 2, game.viewHeight * 0.35)
   }
 
   update(dt: number) {
@@ -69,10 +69,10 @@ class JudgementSprite extends pixi.Text {
       }
 
       const bounce = 1 - util.clamp(util.delta(this.time, 0, 0.3), 0, 1) ** 0.3 * 25
-      this.y = gameplay.viewHeight * 0.35 + bounce
+      this.y = game.viewHeight * 0.35 + bounce
     } else {
       this.alpha = util.lerp(1, 0, util.clamp(util.delta(this.time, 0.5, 1), 0, 1))
-      this.y = gameplay.viewHeight * 0.35 + util.lerp(0, 40, util.clamp(util.delta(this.time, 0, 1), 0, 1))
+      this.y = game.viewHeight * 0.35 + util.lerp(0, 40, util.clamp(util.delta(this.time, 0, 1), 0, 1))
     }
 
     this.pivot.x = this.width / 2

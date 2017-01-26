@@ -5,13 +5,12 @@ import {NoteExplosionSprite} from './note-explosion'
 import {NoteSprite, NoteState} from './note'
 import {ReceptorSprite} from './receptor'
 import {Song} from './song-manager'
+import * as game from './game'
 import * as pixi from 'pixi.js'
 import * as resources from './resources'
 // import {Howl} from 'howler'
 
-export const viewWidth = 540
-export const viewHeight = 960
-export const receptorPosition = viewHeight * 0.889
+export const receptorPosition = game.viewHeight * 0.889
 export const noteSpacing = 300
 
 export class GameplayState implements GameState {

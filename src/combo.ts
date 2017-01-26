@@ -1,5 +1,5 @@
 import * as pixi from 'pixi.js'
-import * as gameplay from './gameplay'
+import * as game from './game'
 import * as util from './util'
 
 export class ComboSprite extends pixi.Text {
@@ -12,7 +12,7 @@ export class ComboSprite extends pixi.Text {
       fontSize: 120,
       fill: 'white'
     })
-    this.position.set(gameplay.viewWidth / 2, gameplay.viewHeight * 0.2)
+    this.position.set(game.viewWidth / 2, game.viewHeight * 0.2)
   }
 
   update(dt: number) {
