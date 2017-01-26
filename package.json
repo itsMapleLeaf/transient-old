@@ -28,7 +28,7 @@
   },
   "scripts": {
     "build": "webpack -p",
-    "dev:server": "webpack-dev-server --inline --progress --open",
+    "dev:server": "webpack-dev-server --inline --progress --open --content-base=build",
     "dev:watch": "webpack -p --watch",
     "dev": "run-p dev:*"
   }
