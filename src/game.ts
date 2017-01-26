@@ -1,300 +1,78 @@
 import * as pixi from 'pixi.js'
-import * as util from './util'
-import * as songman from './song-manager'
-import {Howl} from 'howler'
+import * as WebFontLoader from 'webfontloader'
 
-export const viewWidth = 540
-export const viewHeight = 960
-export const receptorPosition = viewHeight * 0.889
-export const noteSpacing = 300
+const viewWidth = 540
+const viewHeight = 960
 
-enum NoteState {
-  active,
-  hit,
-  missed,
-  holding,
+function animationFrame(): Promise<number> {
+  return new Promise((resolve, reject) => {
+    window.requestAnimationFrame(resolve)
+  })
 }
 
-enum Judgement {
-  absolute,
-  perfect,
-  great,
-  bad,
-  none,
-  // TODO: account for misses
+export class GameState {
+  enter() {}
+  leave() {}
+  update(dt: number) {}
+  render(renderer: pixi.SystemRenderer) {}
+  pointerup(event: pixi.interaction.InteractionEvent) {}
+  pointerdown(event: pixi.interaction.InteractionEvent) {}
+  pointermove(event: pixi.interaction.InteractionEvent) {}
 }
 
-function getTexture(name: string) {
-  return pixi.loader.resources[name].texture
-}
+export class Game {
+  constructor(public state: GameState) {}
 
-function judgeTiming(timing: number) {
-  timing = Math.abs(timing)
-  return (
-    timing <= 0.02 ? Judgement.absolute :
-    timing <= 0.08 ? Judgement.perfect :
-    timing <= 0.12 ? Judgement.great :
-    timing <= 0.25 ? Judgement.bad :
-    Judgement.none
-  )
-}
-
-class Note {
-  state = NoteState.active
-
-  constructor(public time: number, public position: number) {}
-
-  get screenPosition() {
-    const x = util.lerp(110, viewWidth - 110, this.position)
-    const y = receptorPosition + this.time * -noteSpacing
-    return new pixi.Point(x, y)
-  }
-}
-
-class Song {
-  time = -2
-  notes = [] as Note[]
-  playing = false
-  data: songman.SongData
-
-  constructor(name: string) {
-    this.data = songman.getSong(name)
-    this.notes = this.data.notes.map(([time, position]) => new Note(time, position))
+  setState(state: GameState) {
+    this.state.leave()
+    this.state = state
+    this.state.enter()
   }
 
-  update(dt: number) {
-    if (this.playing) {
-      this.time += dt
-    }
-  }
+  async run() {
+    const canvas = document.querySelector('canvas') as HTMLCanvasElement
+    const renderer = pixi.autoDetectRenderer(viewWidth, viewHeight, { view: canvas })
+    const interaction = new pixi.interaction.InteractionManager(renderer)
 
-  loadAudio(): Promise<Howl> {
-    const audio = songman.loadSongAudio(this.data)
-    return new Promise((resolve, reject) => {
-      audio.on('load', () => resolve(audio))
-      audio.on('loaderror', reject)
-    })
-  }
+    interaction.on('pointerdown', (event: pixi.interaction.InteractionEvent) => this.state.pointerdown(event))
+    interaction.on('pointerup', (event: pixi.interaction.InteractionEvent) => this.state.pointerup(event))
+    interaction.on('pointermove', (event: pixi.interaction.InteractionEvent) => this.state.pointermove(event))
 
-  loadArt(): Promise<pixi.Sprite> {
-    const loader = new pixi.loaders.Loader().add('art', this.data.art).load()
-    return new Promise((resolve, reject) => {
-      loader.on('complete', () => {
-        const sprite = new pixi.Sprite(loader.resources['art'].texture)
-        sprite.pivot.set(sprite.width / 2, sprite.height / 2)
-        sprite.position.set(viewWidth / 2, viewHeight / 2)
-        resolve(sprite)
-      })
-      loader.on('error', reject)
-    })
-  }
-}
-
-class NoteSprite extends pixi.Sprite {
-  constructor(public note: Note) {
-    super(getTexture('note'))
-    this.position = note.screenPosition
-    this.pivot.set(this.width / 2, this.height / 2)
-  }
-}
-
-class NoteExplosionSprite extends pixi.Sprite {
-  time = 0
-  origin = new pixi.Point()
-
-  constructor(public x: number, public y: number) {
-    super(getTexture('explosion'))
-    this.pivot.set(this.width / 2, this.height / 2)
-    this.origin.set(x, y)
-  }
-
-  update(dt: number) {
-    this.time += dt * 3
-    if (this.time < 1) {
-      this.alpha = 1 - this.time
-      this.position.x = this.origin.x
-      this.position.y = this.origin.y + this.time ** 2.5 * 80
-    } else {
-      this.destroy()
+    let time = await animationFrame()
+    while (true) {
+      const now = await animationFrame()
+      const dt = (now - time) / 1000
+      time = now
+      this.state.update(dt)
+      this.state.render(renderer)
     }
   }
 }
 
-class ReceptorSprite extends pixi.Sprite {
-  constructor(public note: Note, public song: Song) {
-    super(getTexture('receptor'))
-    this.position.set(note.screenPosition.x, receptorPosition)
-    this.pivot.set(this.width / 2, this.height / 2)
-  }
+ export function loadImages() {
+   return new Promise<pixi.loaders.Resource>((resolve, reject) => {
+     pixi.loader.add('note', require('./assets/images/note.svg'))
+     pixi.loader.add('background', require('./assets/images/background.svg'))
+     pixi.loader.add('receptor', require('./assets/images/receptor.svg'))
+     pixi.loader.add('explosion', require('./assets/images/explosion.svg'))
 
-  update() {
-    if (this.song.time < this.note.time && this.note.state === NoteState.active) {
-      this.alpha = 1 - Math.abs(this.song.time - this.note.time)
-    } else {
-      this.alpha = 0
-    }
-  }
+     pixi.loader.load()
+       .on('load', res => console.log(`loading images... (${ res.progress }%)`))
+       .on('complete', resolve)
+       .on('error', reject)
+   })
 }
 
-class JudgementSprite extends pixi.Text {
-  judgement = Judgement.none
-  time = 0
-
-  constructor() {
-    super('', {
-      fontFamily: 'Teko',
-      fontSize: 100,
-    })
-
-    this.position.set(viewWidth / 2, viewHeight * 0.35)
-  }
-
-  update(dt: number) {
-    this.time += dt
-
-    this.text =
-      this.judgement === Judgement.absolute ? 'ABSOLUTE' :
-      this.judgement === Judgement.perfect ? 'PERFECT' :
-      this.judgement === Judgement.great ? 'GREAT' :
-      this.judgement === Judgement.bad ? 'BAD' :
-      ''
-
-    this.style.fill =
-      this.judgement === Judgement.absolute ? 'rgb(52, 152, 219)' :
-      this.judgement === Judgement.perfect ? 'rgb(241, 196, 15)' :
-      this.judgement === Judgement.great ? 'rgb(46, 204, 113)' :
-      this.judgement === Judgement.bad ? 'rgb(231, 76, 60)' :
-      ''
-
-    if (this.judgement < Judgement.bad) {
-      this.alpha = 1 - util.delta(this.time, 0.8, 1)
-      if (this.judgement === Judgement.absolute) {
-        this.alpha *= util.lerp(0.3, 1, Math.sin(this.time * 100) / 2 + 0.5)
-      }
-
-      const bounce = 1 - util.clamp(util.delta(this.time, 0, 0.3), 0, 1) ** 0.3 * 25
-      this.y = viewHeight * 0.35 + bounce
-    } else {
-      this.alpha = util.lerp(1, 0, util.clamp(util.delta(this.time, 0.5, 1), 0, 1))
-      this.y = viewHeight * 0.35 + util.lerp(0, 40, util.clamp(util.delta(this.time, 0, 1), 0, 1))
-    }
-
-    this.pivot.x = this.width / 2
-  }
-
-  playJudgement(judgement: Judgement) {
-    this.judgement = judgement
-    this.time = 0
-  }
-}
-
-class ComboSprite extends pixi.Text {
-  combo = 0
-  time = 0
-
-  constructor() {
-    super('', {
-      fontFamily: 'Teko',
-      fontSize: 120,
-      fill: 'white'
-    })
-    this.position.set(viewWidth / 2, viewHeight * 0.2)
-  }
-
-  update(dt: number) {
-    this.time += dt
-    if (this.combo > 0) {
-      this.alpha = util.lerp(1, 0.5, util.clamp(util.delta(this.time, 0, 0.3), 0, 1))
-    } else {
-      this.alpha = 0
-    }
-    this.text = this.combo.toString()
-    this.pivot.x = this.width / 2
-  }
-
-  add(combo: number) {
-    this.combo += combo
-    this.time = 0
-  }
-
-  reset() {
-    this.combo = 0
-  }
-}
-
-export default class Game {
-  song = new Song('frigid')
-  audio: Howl
-
-  stage = new pixi.Container()
-  receptors = new pixi.Container()
-  explosions = new pixi.Container()
-  notes = new pixi.Container()
-  judgement = new JudgementSprite()
-  combo = new ComboSprite()
-
-  constructor() {
-    this.init()
-  }
-
-  async init() {
-    this.audio = await this.song.loadAudio()
-
-    this.stage.addChild(await this.song.loadArt())
-    this.stage.addChild(new pixi.Sprite(getTexture('background')))
-    this.stage.addChild(this.receptors)
-    this.stage.addChild(this.explosions)
-    this.stage.addChild(this.notes)
-    this.stage.addChild(this.combo)
-    this.stage.addChild(this.judgement)
-
-    for (const note of this.song.notes) {
-      this.notes.addChild(new NoteSprite(note))
-      this.receptors.addChild(new ReceptorSprite(note, this.song))
-    }
-
-    this.song.playing = true
-  }
-
-  update(dt: number) {
-    this.song.update(dt)
-    this.notes.y = this.song.time * noteSpacing
-    this.judgement.update(dt)
-    this.combo.update(dt)
-    for (const exp of this.explosions.children as NoteExplosionSprite[]) exp.update(dt)
-    for (const rec of this.receptors.children as ReceptorSprite[]) rec.update()
-  }
-
-  draw(renderer: pixi.SystemRenderer) {
-    renderer.render(this.stage)
-  }
-
-  pointerdown(event: pixi.interaction.InteractionEvent) {
-    this.tryTapNote(event.data.global, (note, timing) => {
-      this.explosions.addChild(new NoteExplosionSprite(note.screenPosition.x, receptorPosition))
-
-      const judgement = judgeTiming(timing)
-      this.judgement.playJudgement(judgement)
-      if (judgement < Judgement.bad) {
-        this.combo.add(1)
-      }
-    })
-  }
-
-  tryTapNote(touch: pixi.Point, callback: (note: Note, timing: number) => any) {
-    for (const sprite of this.notes.children as NoteSprite[]) {
-      const note = sprite.note
-
-      const isActive = note.state === NoteState.active
-      const touchDistance = Math.abs(note.screenPosition.x - touch.x)
-      const touchTiming = Math.abs(this.song.time - note.time)
-
-      if (isActive && touchDistance < 80 && touchTiming < 0.25) {
-        note.state = NoteState.hit
-        sprite.destroy()
-        callback(note, touchTiming)
-        break
-      }
-    }
-  }
+ export function loadFonts() {
+   return new Promise<void>((resolve, reject) => {
+     WebFontLoader.load({
+       google: {
+         families: ['Teko']
+       },
+       fontactive: font => console.log('loaded font', font),
+       fontinactive: font => console.error('error loading font ', font),
+       active: resolve,
+       inactive: reject,
+     })
+   })
 }

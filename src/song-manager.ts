@@ -1,4 +1,4 @@
-import * as path from 'path'
+// import * as path from 'path'
 import {Howl} from 'howler'
 
 declare var require: any
@@ -25,33 +25,34 @@ const songs = {} as SongRegistry
 //   data.audio = audio.map(file => require(path.join(songsFolder, name, file)))
 // }
 
-export function loadSongs() {
-  const context = require.context('../songs', true, /song\.yaml/)
-  for (const file of context.keys() as string[]) {
-    const data = context(file)
-    const name = path.basename(path.dirname(file))
+// export function loadSongs() {
+//   const context = require.context('../songs', true, /song\.yaml/)
+//   for (const file of context.keys() as string[]) {
+//     const data = context(file)
+//     const name = path.basename(path.dirname(file))
 
-    const song: SongData = {
-      title: data.title,
-      artist: data.artist,
-      art: path.join('songs', name, data.art),
-      offset: data.offset,
-      audio: data.audio.map((file: string) => path.join('songs', name, file)),
-      notes: data.notes
-    }
+//     const song: SongData = {
+//       title: data.title,
+//       artist: data.artist,
+//       art: path.join('songs', name, data.art),
+//       offset: data.offset,
+//       audio: data.audio.map((file: string) => path.join('songs', name, file)),
+//       notes: data.notes
+//     }
 
-    songs[name] = song
-  }
+//     songs[name] = song
+//   }
 
-  console.log(songs)
-}
+//   console.log(songs)
+// }
 
 export function getSongList() {
   return Object.keys(songs).sort()
 }
 
-export function getSong(name: string) {
-  return songs[name]
+export function loadSong(name: string) {
+  const songData = require(`./assets/songs/${name}/song.js`) as SongData
+  return songData
 }
 
 export function loadSongAudio(song: SongData) {
