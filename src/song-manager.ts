@@ -17,21 +17,27 @@ export type NoteData = {
   position: number
 }
 
-export function loadSong(name: string): SongData {
-  const data = require(`./assets/songs/${name}/song.js`)
-  // TODO: more sanity checks
-  return {
-    title: data.title || '',
-    artist: data.artist || '',
-    art: data.art || '',
-    offset: data.offset || '',
-    audio: data.audio || [],
-    notes: data.notes.map(([time, position]: [number, number]) => ({time, position}))
-  }
-}
+export class Song {
+  title: string
+  artist: string
+  art: string
+  offset: number
+  audio: string[]
+  notes: NoteData[]
 
-export function loadSongAudio(song: SongData) {
-  return new Howl({
-    src: song.audio
-  })
+  constructor(public name: string) {
+    const data = require(`./assets/songs/${name}/song.js`)
+    this.title = data.title || ''
+    this.artist = data.artist || ''
+    this.art = data.art || ''
+    this.offset = data.offset || ''
+    this.audio = data.audio || []
+    this.notes = data.notes.map(([time, position]: [number, number]) => ({ time, position }))
+  }
+
+  loadAudio() {
+    return new Howl({
+      src: this.audio
+    })
+  }
 }

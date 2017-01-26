@@ -1,6 +1,6 @@
 import {GameState} from './game'
+import {Song, NoteData} from './song-manager'
 import * as pixi from 'pixi.js'
-import * as songman from './song-manager'
 import * as util from './util'
 // import {Howl} from 'howler'
 
@@ -57,7 +57,7 @@ export class GameplayState implements GameState {
   combo = new ComboSprite()
 
   enter() {
-    const song = songman.loadSong('frigid')
+    const song = new Song('frigid')
     for (const note of song.notes) {
       const noteSprite = this.notes.addChild(new NoteSprite(note))
       this.receptors.addChild(new ReceptorSprite(noteSprite.x, receptorPosition, note.time))
@@ -130,7 +130,7 @@ class NoteSprite extends pixi.Sprite {
   time = 0
   state = NoteState.active
 
-  constructor(data: songman.NoteData) {
+  constructor(data: NoteData) {
     super(getTexture('note'))
     this.position.x = util.lerp(110, viewWidth - 110, data.position)
     this.position.y = receptorPosition + data.time * -noteSpacing
