@@ -14,14 +14,30 @@ const timingPerfect = 0.03
 const timingGreat = 0.12
 const timingBad = 0.25
 
-enum NoteState {
+const judgementText = {
+  [Judgement.absolute]: 'ABSOLUTE',
+  [Judgement.perfect]: 'PERFECT',
+  [Judgement.great]: 'GREAT',
+  [Judgement.bad]: 'BAD',
+  [Judgement.miss]: 'BREAK',
+}
+
+const judgementColor = {
+  [Judgement.absolute]: 'rgb(52, 152, 219)',
+  [Judgement.perfect]: 'rgb(241, 196, 15)',
+  [Judgement.great]: 'rgb(46, 204, 113)',
+  [Judgement.bad]: 'rgb(155, 89, 182)',
+  [Judgement.miss]: 'rgb(231, 76, 60)',
+}
+
+const enum NoteState {
   active,
   hit,
   missed,
   holding,
 }
 
-enum Judgement {
+const enum Judgement {
   absolute,
   perfect,
   great,
@@ -215,21 +231,8 @@ class JudgementSprite extends pixi.Text {
   update(dt: number) {
     this.time += dt
 
-    this.text =
-      this.judgement === Judgement.absolute ? 'ABSOLUTE' :
-      this.judgement === Judgement.perfect ? 'PERFECT' :
-      this.judgement === Judgement.great ? 'GREAT' :
-      this.judgement === Judgement.bad ? 'BAD' :
-      this.judgement === Judgement.miss ? 'BREAK' :
-      ''
-
-    this.style.fill =
-      this.judgement === Judgement.absolute ? 'rgb(52, 152, 219)' :
-      this.judgement === Judgement.perfect ? 'rgb(241, 196, 15)' :
-      this.judgement === Judgement.great ? 'rgb(46, 204, 113)' :
-      this.judgement === Judgement.bad ? 'rgb(155, 89, 182)' :
-      this.judgement === Judgement.miss ? 'rgb(231, 76, 60)' :
-      ''
+    this.text = judgementText[this.judgement] || ''
+    this.style.fill = judgementColor[this.judgement] || 'transparent'
 
     if (this.judgement < Judgement.bad) {
       this.alpha = 1 - util.delta(this.time, 0.8, 1)
