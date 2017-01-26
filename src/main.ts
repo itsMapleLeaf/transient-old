@@ -1,11 +1,13 @@
-import {loadImages, loadFonts} from './resources'
-import {Game} from './game'
+import {game} from './game'
 import {GameplayState} from './gameplay'
+import {loadImages, loadFonts} from './resources'
 
 async function main() {
   await loadImages()
   await loadFonts()
-  await new Game(new GameplayState()).run()
+
+  game.setState(new GameplayState())
+  await game.run()
 }
 
 main().catch(err => console.error(err))

@@ -9,21 +9,11 @@ function animationFrame(): Promise<number> {
   })
 }
 
-export interface GameState {
-  enter(): void
-  leave(): void
-  update(dt: number): void
-  render(renderer: pixi.SystemRenderer): void
-  pointerup(event: pixi.interaction.InteractionEvent): void
-  pointerdown(event: pixi.interaction.InteractionEvent): void
-  pointermove(event: pixi.interaction.InteractionEvent): void
-}
-
-export class Game {
-  constructor(public state: GameState) {}
+class Game {
+  state: GameState
 
   setState(state: GameState) {
-    this.state.leave()
+    this.state && this.state.leave()
     this.state = state
     this.state.enter()
   }
@@ -47,3 +37,16 @@ export class Game {
     }
   }
 }
+
+export interface GameState {
+  enter(): void
+  leave(): void
+  update(dt: number): void
+  render(renderer: pixi.SystemRenderer): void
+  pointerup(event: pixi.interaction.InteractionEvent): void
+  pointerdown(event: pixi.interaction.InteractionEvent): void
+  pointermove(event: pixi.interaction.InteractionEvent): void
+}
+
+// use game as a singleton, to make state switching easier
+export const game = new Game()
