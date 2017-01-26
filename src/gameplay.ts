@@ -56,7 +56,7 @@ export class GameplayState implements GameState {
   judgement = new JudgementSprite()
   combo = new ComboSprite()
 
-  constructor() {
+  enter() {
     const song = songman.loadSong('frigid')
     for (const [time, position] of song.notes) {
       const note = this.notes.addChild(new NoteSprite(new NoteData(time, position)))
@@ -73,8 +73,6 @@ export class GameplayState implements GameState {
 
     this.playing = true
   }
-
-  enter() {}
 
   leave() {}
 
