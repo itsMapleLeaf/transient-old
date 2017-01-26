@@ -28,3 +28,7 @@ export function loadFonts() {
     })
   })
 }
+
+export function getTexture(name: string) {
+  return pixi.loader.resources[name].texture
+}
