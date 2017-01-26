@@ -45,7 +45,7 @@ export class GameplayState extends GameState {
   // audio: Howl
 
   // game state
-  songTime = 0
+  songTime = -2
   playing = false
 
   // rendering stuff
@@ -60,7 +60,6 @@ export class GameplayState extends GameState {
     super()
 
     const song = songman.loadSong('frigid')
-
     for (const [time, position] of song.notes) {
       const note = this.notes.addChild(new NoteSprite(new NoteData(time, position)))
       this.receptors.addChild(new ReceptorSprite(note.x, receptorPosition, time))
@@ -87,7 +86,7 @@ export class GameplayState extends GameState {
     for (const rec of this.receptors.children as ReceptorSprite[]) rec.update(this.songTime)
   }
 
-  draw(renderer: pixi.SystemRenderer) {
+  render(renderer: pixi.SystemRenderer) {
     renderer.render(this.stage)
   }
 
