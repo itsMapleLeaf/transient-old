@@ -1,8 +1,6 @@
 // import * as path from 'path'
 import {Howl} from 'howler'
 
-declare var require: any
-
 export type NoteData = {
   time: number
   position: number
