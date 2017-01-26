@@ -40,7 +40,7 @@ function judgeTiming(timing: number) {
   )
 }
 
-export class GameplayState extends GameState {
+export class GameplayState implements GameState {
   // song = new Song('frigid')
   // audio: Howl
 
@@ -57,8 +57,6 @@ export class GameplayState extends GameState {
   combo = new ComboSprite()
 
   constructor() {
-    super()
-
     const song = songman.loadSong('frigid')
     for (const [time, position] of song.notes) {
       const note = this.notes.addChild(new NoteSprite(new NoteData(time, position)))
@@ -75,6 +73,10 @@ export class GameplayState extends GameState {
 
     this.playing = true
   }
+
+  enter() {}
+
+  leave() {}
 
   update(dt: number) {
     this.songTime += dt
@@ -101,6 +103,10 @@ export class GameplayState extends GameState {
       }
     })
   }
+
+  pointerup() {}
+
+  pointermove() {}
 
   tryTapNote(touch: pixi.Point, callback: (note: NoteSprite, timing: number) => any) {
     for (const note of this.notes.children as NoteSprite[]) {

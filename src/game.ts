@@ -10,14 +10,14 @@ function animationFrame(): Promise<number> {
   })
 }
 
-export class GameState {
-  enter() {}
-  leave() {}
-  update(dt: number) {}
-  render(renderer: pixi.SystemRenderer) {}
-  pointerup(event: pixi.interaction.InteractionEvent) {}
-  pointerdown(event: pixi.interaction.InteractionEvent) {}
-  pointermove(event: pixi.interaction.InteractionEvent) {}
+export interface GameState {
+  enter(): void
+  leave(): void
+  update(dt: number): void
+  render(renderer: pixi.SystemRenderer): void
+  pointerup(event: pixi.interaction.InteractionEvent): void
+  pointerdown(event: pixi.interaction.InteractionEvent): void
+  pointermove(event: pixi.interaction.InteractionEvent): void
 }
 
 export class Game {
