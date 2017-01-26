@@ -9,6 +9,11 @@ export const viewHeight = 960
 export const receptorPosition = viewHeight * 0.889
 export const noteSpacing = 300
 
+const timingAbsolute = 0.02
+const timingPerfect = 0.03
+const timingGreat = 0.12
+const timingBad = 0.25
+
 enum NoteState {
   active,
   hit,
@@ -21,8 +26,8 @@ enum Judgement {
   perfect,
   great,
   bad,
+  miss,
   none,
-  // TODO: account for misses
 }
 
 function getTexture(name: string) {
@@ -32,10 +37,10 @@ function getTexture(name: string) {
 function judgeTiming(timing: number) {
   timing = Math.abs(timing)
   return (
-    timing <= 0.02 ? Judgement.absolute :
-    timing <= 0.08 ? Judgement.perfect :
-    timing <= 0.12 ? Judgement.great :
-    timing <= 0.25 ? Judgement.bad :
+    timing <= timingAbsolute ? Judgement.absolute :
+    timing <= timingPerfect ? Judgement.perfect :
+    timing <= timingGreat ? Judgement.great :
+    timing <= timingBad ? Judgement.bad :
     Judgement.none
   )
 }
@@ -79,6 +84,7 @@ export class GameplayState implements GameState {
   update(dt: number) {
     this.songTime += dt
     this.notes.y = this.songTime * noteSpacing
+    this.checkMisses()
 
     this.judgement.update(dt)
     this.combo.update(dt)
@@ -116,12 +122,28 @@ export class GameplayState implements GameState {
       const touchDistance = Math.abs(note.x - touch.x)
       const touchTiming = Math.abs(this.songTime - note.time)
 
-      if (isActive && touchDistance < 80 && touchTiming < 0.25) {
+      if (isActive && touchDistance < 80 && touchTiming < timingBad) {
         note.state = NoteState.hit
         note.visible = false
         callback(note, touchTiming)
         break
       }
+    }
+  }
+
+  checkMisses() {
+    let missed = false
+
+    for (const note of this.notes.children as NoteSprite[]) {
+      if (note.state === NoteState.active && this.songTime > note.time + timingBad) {
+        note.state = NoteState.missed
+        note.visible = false
+        missed = true
+      }
+    }
+
+    if (missed) {
+      this.judgement.playJudgement(Judgement.miss)
     }
   }
 }
@@ -198,13 +220,15 @@ class JudgementSprite extends pixi.Text {
       this.judgement === Judgement.perfect ? 'PERFECT' :
       this.judgement === Judgement.great ? 'GREAT' :
       this.judgement === Judgement.bad ? 'BAD' :
+      this.judgement === Judgement.miss ? 'BREAK' :
       ''
 
     this.style.fill =
       this.judgement === Judgement.absolute ? 'rgb(52, 152, 219)' :
       this.judgement === Judgement.perfect ? 'rgb(241, 196, 15)' :
       this.judgement === Judgement.great ? 'rgb(46, 204, 113)' :
-      this.judgement === Judgement.bad ? 'rgb(231, 76, 60)' :
+      this.judgement === Judgement.bad ? 'rgb(155, 89, 182)' :
+      this.judgement === Judgement.miss ? 'rgb(231, 76, 60)' :
       ''
 
     if (this.judgement < Judgement.bad) {
