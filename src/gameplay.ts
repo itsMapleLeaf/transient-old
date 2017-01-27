@@ -14,12 +14,11 @@ export const receptorPosition = game.viewHeight * 0.889
 export const noteSpacing = 300
 
 export class GameplayState implements GameState {
-  // song = new Song('frigid')
-  // audio: Howl
-
   // game state
   songTime = -2
-  playing = false
+  loading = true
+  song = new Song('frigid')
+  audio: Howl
 
   // rendering stuff
   stage = new pixi.Container()
@@ -29,9 +28,8 @@ export class GameplayState implements GameState {
   judgement = new JudgementSprite()
   combo = new ComboSprite()
 
-  enter() {
-    const song = new Song('frigid')
-    for (const note of song.notes) {
+  async enter() {
+    for (const note of this.song.notes) {
       const noteSprite = this.notes.addChild(new NoteSprite(note))
       this.receptors.addChild(new ReceptorSprite(noteSprite.x, receptorPosition, note.time))
     }
@@ -44,13 +42,22 @@ export class GameplayState implements GameState {
     this.stage.addChild(this.combo)
     this.stage.addChild(this.judgement)
 
-    this.playing = true
+    this.audio = await this.song.loadAudio()
+    this.loading = false
   }
 
   leave() {}
 
   update(dt: number) {
+    if (this.loading) return
+
     this.songTime += dt
+
+    if (this.songTime >= -this.song.offset && !this.audio.playing()) {
+      this.audio.seek(this.songTime + this.song.offset)
+      this.audio.play()
+    }
+
     this.notes.y = this.songTime * noteSpacing
     this.checkMisses()
 
@@ -70,6 +77,8 @@ export class GameplayState implements GameState {
   }
 
   pointerdown(event: pixi.interaction.InteractionEvent) {
+    if (this.loading) return
+
     this.tryTapNote(event.data.global, (note, timing) => {
       const judgement = judgeTiming(timing)
       this.explosions.addChild(new NoteExplosionSprite(note.x, receptorPosition))

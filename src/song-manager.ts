@@ -25,8 +25,10 @@ export class Song {
   }
 
   loadAudio() {
-    return new Howl({
-      src: this.audio
+    return new Promise<Howl>((resolve, reject) => {
+      const sound = new Howl({ src: this.audio })
+      sound.on('load', () => resolve(sound))
+      sound.on('loaderror', (_, err) => reject(err))
     })
   }
 }
