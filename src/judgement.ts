@@ -2,10 +2,21 @@ import * as pixi from 'pixi.js'
 import * as game from './game'
 import * as util from './util'
 
-const timingAbsolute = 0.02
-const timingPerfect = 0.03
-const timingGreat = 0.12
-const timingBad = 0.25
+const enum Judgement {
+  absolute,
+  perfect,
+  great,
+  bad,
+  miss,
+  none,
+}
+
+const timingWindow = {
+  [Judgement.absolute]: 0.02,
+  [Judgement.perfect]: 0.08,
+  [Judgement.great]: 0.12,
+  [Judgement.bad]: 0.25,
+}
 
 const judgementText = {
   [Judgement.absolute]: 'ABSOLUTE',
@@ -23,22 +34,13 @@ const judgementColor = {
   [Judgement.miss]: 'rgb(231, 76, 60)',
 }
 
-const enum Judgement {
-  absolute,
-  perfect,
-  great,
-  bad,
-  miss,
-  none,
-}
-
 function judgeTiming(timing: number) {
   timing = Math.abs(timing)
   return (
-    timing <= timingAbsolute ? Judgement.absolute :
-    timing <= timingPerfect ? Judgement.perfect :
-    timing <= timingGreat ? Judgement.great :
-    timing <= timingBad ? Judgement.bad :
+    timing <= timingWindow[Judgement.absolute] ? Judgement.absolute :
+    timing <= timingWindow[Judgement.perfect] ? Judgement.perfect :
+    timing <= timingWindow[Judgement.great] ? Judgement.great :
+    timing <= timingWindow[Judgement.bad] ? Judgement.bad :
     Judgement.none
   )
 }
@@ -88,8 +90,5 @@ export {
   Judgement,
   JudgementSprite,
   judgeTiming,
-  timingAbsolute,
-  timingPerfect,
-  timingGreat,
-  timingBad,
+  timingWindow,
 }

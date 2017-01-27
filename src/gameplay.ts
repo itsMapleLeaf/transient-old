@@ -1,6 +1,6 @@
 import {ComboSprite} from './combo'
 import {GameState} from './game'
-import {Judgement, JudgementSprite, judgeTiming, timingBad} from './judgement'
+import {Judgement, JudgementSprite, judgeTiming, timingWindow} from './judgement'
 import {NoteExplosionSprite} from './note-explosion'
 import {NoteSprite, NoteState} from './note'
 import {ReceptorSprite} from './receptor'
@@ -90,7 +90,7 @@ export class GameplayState implements GameState {
       const touchDistance = Math.abs(note.x - touch.x)
       const touchTiming = Math.abs(this.songTime - note.time)
 
-      if (isActive && touchDistance < 80 && touchTiming < timingBad) {
+      if (isActive && touchDistance < 80 && touchTiming < timingWindow[Judgement.bad]) {
         note.state = NoteState.hit
         note.visible = false
         callback(note, touchTiming)
@@ -103,7 +103,7 @@ export class GameplayState implements GameState {
     let missed = false
 
     for (const note of this.notes.children as NoteSprite[]) {
-      if (note.state === NoteState.active && this.songTime > note.time + timingBad) {
+      if (note.state === NoteState.active && this.songTime > note.time + timingWindow[Judgement.bad]) {
         note.state = NoteState.missed
         note.visible = false
         missed = true
