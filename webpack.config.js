@@ -5,8 +5,7 @@ module.exports = {
   entry: './src/main.ts',
   output: {
     path: path.resolve(__dirname, 'build'),
-    filename: 'bundle.js',
-    publicPath: 'build/'
+    filename: 'bundle.js'
   },
   module: {
     rules: [
