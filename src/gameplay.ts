@@ -103,7 +103,9 @@ export class GameplayState implements GameState {
     let missed = false
 
     for (const note of this.notes.children as NoteSprite[]) {
-      if (note.state === NoteState.active && this.songTime > note.time + timingWindow[Judgement.bad]) {
+      const isActive = note.state === NoteState.active
+      const isMissed = this.songTime > note.time + timingWindow[Judgement.bad]
+      if (isActive && isMissed) {
         note.state = NoteState.missed
         note.visible = false
         missed = true
